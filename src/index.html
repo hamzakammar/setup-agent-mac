@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mac Setup Agent</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .step {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .step.completed {
+            border-left-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+        }
+        .step.pending {
+            border-left-color: #FFC107;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #4CAF50;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Mac Setup Agent</h1>
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="status" id="status">Ready to begin setup...</div>
+
+        <div class="step pending" id="step1">
+            <strong>Step 1:</strong> Install Homebrew
+        </div>
+        <div class="step pending" id="step2">
+            <strong>Step 2:</strong> Install Node.js and npm
+        </div>
+        <div class="step pending" id="step3">
+            <strong>Step 3:</strong> Install Git
+        </div>
+        <div class="step pending" id="step4">
+            <strong>Step 4:</strong> Clone MCP Workspace
+        </div>
+        <div class="step pending" id="step5">
+            <strong>Step 5:</strong> Install Dependencies
+        </div>
+        <div class="step pending" id="step6">
+            <strong>Step 6:</strong> Configure Environment
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="startSetup()" id="startBtn">Start Setup</button>
+            <button onclick="checkStatus()" id="checkBtn" disabled>Check Status</button>
+        </div>
+    </div>
+
+    <script>
+        const { exec } = require('child_process');
+        const fs = require('fs');
+        const path = require('path');
+
+        let currentStep = 0;
+        const steps = [
+            { name: 'Install Homebrew', command: installHomebrew },
+            { name: 'Install Node.js', command: installNode },
+            { name: 'Install Git', command: installGit },
+            { name: 'Clone Repository', command: cloneRepo },
+            { name: 'Install Dependencies', command: installDeps },
+            { name: 'Configure Environment', command: configureEnv }
+        ];
+
+        function updateProgress(step) {
+            const progress = ((step + 1) / steps.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('status').textContent = `Step ${step + 1}/${steps.length}: ${steps[step].name}`;
+
+            // Update step visual status
+            for (let i = 0; i < steps.length; i++) {
+                const stepEl = document.getElementById('step' + (i + 1));
+                if (i < step) {
+                    stepEl.className = 'step completed';
+                } else if (i === step) {
+                    stepEl.className = 'step pending';
+                } else {
+                    stepEl.className = 'step';
+                }
+            }
+        }
+
+        function runCommand(command, callback) {
+            exec(command, (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Error: ${error}`);
+                    document.getElementById('status').textContent = `Error: ${error.message}`;
+                    return;
+                }
+                console.log(`Output: ${stdout}`);
+                if (callback) callback(stdout, stderr);
+            });
+        }
+
+        function installHomebrew() {
+            runCommand('/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"', () => {
+                nextStep();
+            });
+        }
+
+        function installNode() {
+            runCommand('brew install node', () => {
+                nextStep();
+            });
+        }
+
+        function installGit() {
+            runCommand('brew install git', () => {
+                nextStep();
+            });
+        }
+
+        function cloneRepo() {
+            const repoPath = path.join(require('os').homedir(), 'Documents', 'Code', 'mcp-workspace');
+            runCommand(`git clone https://github.com/hamzakammar/mcp-workspace.git "${repoPath}"`, () => {
+                nextStep();
+            });
+        }
+
+        function installDeps() {
+            const repoPath = path.join(require('os').homedir(), 'Documents', 'Code', 'mcp-workspace');
+            runCommand(`cd "${repoPath}" && npm install`, () => {
+                nextStep();
+            });
+        }
+
+        function configureEnv() {
+            const repoPath = path.join(require('os').homedir(), 'Documents', 'Code', 'mcp-workspace');
+            const envPath = path.join(repoPath, '.env');
+
+            // Create basic .env template
+            const envContent = `# MCP Workspace Environment Variables
+# Copy this file and fill in your credentials
+
+# D2L Brightspace Credentials
+D2L_HOST=learn.yourschool.edu
+D2L_USERNAME=your-username
+D2L_PASSWORD=your-password
+
+# MCP Configuration
+MCP_PORT=3000
+MCP_TRANSPORT=http
+
+# Authentication Token (generate a secure random string)
+STUDY_MCP_TOKEN=your-secure-token-here
+
+# Supabase Configuration (for study features)
+SUPABASE_URL=your-supabase-url
+SUPABASE_ANON_KEY=your-supabase-anon-key
+`;
+
+            fs.writeFile(envPath, envContent, (err) => {
+                if (err) {
+                    document.getElementById('status').textContent = `Error creating .env: ${err.message}`;
+                    return;
+                }
+                document.getElementById('status').textContent = 'Setup complete! Please edit .env file with your credentials.';
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('checkBtn').disabled = false;
+            });
+        }
+
+        function nextStep() {
+            currentStep++;
+            if (currentStep < steps.length) {
+                updateProgress(currentStep);
+                setTimeout(() => {
+                    steps[currentStep].command();
+                }, 1000);
+            } else {
+                updateProgress(currentStep - 1);
+                document.getElementById('status').textContent = 'All steps completed!';
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('checkBtn').disabled = false;
+            }
+        }
+
+        function startSetup() {
+            document.getElementById('startBtn').disabled = true;
+            currentStep = 0;
+            updateProgress(currentStep);
+            setTimeout(() => {
+                steps[currentStep].command();
+            }, 1000);
+        }
+
+        function checkStatus() {
+            const repoPath = path.join(require('os').homedir(), 'Documents', 'Code', 'mcp-workspace');
+
+            // Check if directory exists
+            if (fs.existsSync(repoPath)) {
+                document.getElementById('status').textContent = '✅ Repository cloned successfully!';
+
+                // Check if .env exists
+                const envPath = path.join(repoPath, '.env');
+                if (fs.existsSync(envPath)) {
+                    document.getElementById('status').textContent = '✅ Environment configured! You can now run the MCP server.';
+                } else {
+                    document.getElementById('status').textContent = '⚠️ Repository exists but .env file not found. Please create it manually.';
+                }
+            } else {
+                document.getElementById('status').textContent = '❌ Repository not found. Please run setup again.';
+            }
+        }
+    </script>
+</body>
+</html>
