@@ -137,7 +137,7 @@
             { name: 'Install Homebrew', command: installHomebrew },
             { name: 'Install Node.js', command: installNode },
             { name: 'Install Git', command: installGit },
-            { name: 'Clone Repository', command: cloneRepo },
+            { name: 'Download Repository', command: downloadAndExtractRepo }, // Changed from cloneRepo
             { name: 'Install Dependencies', command: installDeps },
             { name: 'Configure Environment', command: configureEnv }
         ];
@@ -194,22 +194,57 @@
             });
         }
 
-        function cloneRepo() {
-            const repoPath = path.join(require('os').homedir(), 'Documents', 'Code', 'mcp-workspace');
-            runCommand(`git clone https://github.com/hamzakammar/mcp-workspace.git "${repoPath}"`, () => {
-                nextStep();
+        function downloadAndExtractRepo() {
+            const tmpDir = path.join(require('os').homedir(), 'StudyMCP', 'tmp');
+            const extractDir = path.join(tmpDir, 'extract');
+            const finalRepoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace');
+            
+            // GitHub ZIP download URL
+            const zipUrl = 'https://github.com/hamzakammar/mcp-workspace/archive/refs/heads/main.zip';
+            const zipPath = path.join(tmpDir, 'repo.zip');
+            
+            document.getElementById('status').textContent = 'Creating directories...';
+            
+            // Step 1: Create directories
+            runCommand(`mkdir -p "${tmpDir}" "${extractDir}"`, () => {
+                document.getElementById('status').textContent = 'Downloading repository ZIP...';
+                
+                // Step 2: Download ZIP
+                runCommand(`curl -L -o "${zipPath}" "${zipUrl}"`, () => {
+                    document.getElementById('status').textContent = 'Extracting ZIP file...';
+                    
+                    // Step 3: Extract ZIP
+                    runCommand(`unzip -q "${zipPath}" -d "${extractDir}"`, () => {
+                        document.getElementById('status').textContent = 'Moving repository to final location...';
+                        
+                        // Step 4: Move extracted folder to final location
+                        // The extracted folder will be named "mcp-workspace-main"
+                        const extractedFolder = path.join(extractDir, 'mcp-workspace-main');
+                        
+                        runCommand(`mv "${extractedFolder}" "${finalRepoPath}"`, () => {
+                            document.getElementById('status').textContent = 'Repository downloaded and extracted successfully!';
+                            nextStep();
+                        }, (error) => {
+                            document.getElementById('status').textContent = `Failed to move repository: ${error.message}`;
+                        });
+                    }, (error) => {
+                        document.getElementById('status').textContent = `Failed to extract ZIP: ${error.message}`;
+                    });
+                }, (error) => {
+                    document.getElementById('status').textContent = `Failed to download ZIP: ${error.message}`;
+                });
             });
         }
 
         function installDeps() {
-            const repoPath = path.join(require('os').homedir(), 'Documents', 'Code', 'mcp-workspace');
+            const repoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace'); // Updated path
             runCommand(`cd "${repoPath}" && npm install`, () => {
                 nextStep();
             });
         }
 
         function configureEnv() {
-            const repoPath = path.join(require('os').homedir(), 'Documents', 'Code', 'mcp-workspace');
+            const repoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace'); 
             const envPath = path.join(repoPath, '.env');
 
             // Create basic .env template
@@ -415,7 +450,7 @@ SUPABASE_ANON_KEY=your-supabase-anon-key
         };
 
         function checkStatus() {
-            const repoPath = path.join(require('os').homedir(), 'Documents', 'Code', 'mcp-workspace');
+            const repoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace'); 
 
             // Check if directory exists
             if (fs.existsSync(repoPath)) {
