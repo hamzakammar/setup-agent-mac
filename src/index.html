@@ -82,10 +82,24 @@
 <body>
     <div class="container">
         <h1>🚀 Mac Setup Agent</h1>
-        <div class="progress">
-            <div class="progress-bar" id="progressBar"></div>
+
+        <!-- Node.js Installation Screen -->
+        <div id="nodeInstallScreen" style="display: none;">
+            <h2>Node.js Required</h2>
+            <p>Node.js is required to run the MCP workspace. Would you like to install it now?</p>
+            <div style="text-align: center; margin: 30px 0;">
+                <button onclick="installNode()" id="installNodeBtn">Install Node.js</button>
+                <button onclick="showError('Node.js is required to continue.')" style="background: #f44336;">Cancel</button>
+            </div>
+            <div id="nodeInstallStatus" style="text-align: center; color: #FFC107;"></div>
         </div>
-        <div class="status" id="status">Ready to begin setup...</div>
+
+        <!-- Main Setup Screen -->
+        <div id="mainSetupScreen">
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="status" id="status">Checking Node.js...</div>
 
         <div class="step pending" id="step1">
             <strong>Step 1:</strong> Install Homebrew
@@ -106,10 +120,11 @@
             <strong>Step 6:</strong> Configure Environment
         </div>
 
-        <div style="text-align: center; margin-top: 30px;">
-            <button onclick="startSetup()" id="startBtn">Start Setup</button>
-            <button onclick="checkStatus()" id="checkBtn" disabled>Check Status</button>
-        </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="startSetup()" id="startBtn" disabled>Start Setup</button>
+                <button onclick="checkStatus()" id="checkBtn" disabled>Check Status</button>
+            </div>
+        </div> <!-- End mainSetupScreen -->
     </div>
 
     <script>
@@ -145,11 +160,15 @@
             }
         }
 
-        function runCommand(command, callback) {
+        function runCommand(command, callback, errorCallback) {
             exec(command, (error, stdout, stderr) => {
                 if (error) {
                     console.error(`Error: ${error}`);
-                    document.getElementById('status').textContent = `Error: ${error.message}`;
+                    if (errorCallback) {
+                        errorCallback(error);
+                    } else {
+                        document.getElementById('status').textContent = `Error: ${error.message}`;
+                    }
                     return;
                 }
                 console.log(`Output: ${stdout}`);
@@ -225,6 +244,147 @@ SUPABASE_ANON_KEY=your-supabase-anon-key
             });
         }
 
+        // Node.js installation functions
+        function checkNodeInstallation() {
+            document.getElementById('status').textContent = 'Checking Node.js installation...';
+
+            // Check both node and npm
+            const nodeCheck = new Promise((resolve) => {
+                runCommand('node --version', (stdout) => {
+                    console.log('Node.js found:', stdout.trim());
+                    resolve(true);
+                }, () => {
+                    console.log('Node.js not found');
+                    resolve(false);
+                });
+            });
+
+            const npmCheck = new Promise((resolve) => {
+                runCommand('npm --version', (stdout) => {
+                    console.log('npm found:', stdout.trim());
+                    resolve(true);
+                }, () => {
+                    console.log('npm not found');
+                    resolve(false);
+                });
+            });
+
+            Promise.all([nodeCheck, npmCheck]).then(([nodeInstalled, npmInstalled]) => {
+                if (nodeInstalled && npmInstalled) {
+                    document.getElementById('status').textContent = '✅ Node.js is installed. Ready to begin setup!';
+                    document.getElementById('startBtn').disabled = false;
+                } else {
+                    showNodeInstallScreen();
+                }
+            });
+        }
+
+        function showNodeInstallScreen() {
+            document.getElementById('nodeInstallScreen').style.display = 'block';
+            document.getElementById('mainSetupScreen').style.display = 'none';
+        }
+
+        function installNode() {
+            document.getElementById('installNodeBtn').disabled = true;
+            document.getElementById('nodeInstallStatus').textContent = 'Detecting system architecture...';
+
+            // Detect architecture
+            const arch = process.arch;
+            const platform = process.platform;
+
+            console.log('Architecture:', arch);
+            console.log('Platform:', platform);
+
+            if (platform !== 'darwin') {
+                showError('This installer is only for macOS.');
+                return;
+            }
+
+            // Node.js LTS download URLs for macOS
+            const nodeVersion = '20.11.1'; // LTS version
+            const baseUrl = `https://nodejs.org/dist/v${nodeVersion}`;
+            let installerUrl;
+
+            if (arch === 'arm64') {
+                installerUrl = `${baseUrl}/node-v${nodeVersion}-darwin-arm64.pkg`;
+            } else if (arch === 'x64') {
+                installerUrl = `${baseUrl}/node-v${nodeVersion}-darwin-x64.pkg`;
+            } else {
+                showError(`Unsupported architecture: ${arch}`);
+                return;
+            }
+
+            console.log('Downloading from:', installerUrl);
+
+            const downloadPath = path.join(require('os').homedir(), 'StudyMCP', 'tmp');
+            const installerPath = path.join(downloadPath, 'node.pkg');
+
+            document.getElementById('nodeInstallStatus').textContent = 'Creating download directory...';
+
+            // Create download directory
+            runCommand(`mkdir -p "${downloadPath}"`, () => {
+                document.getElementById('nodeInstallStatus').textContent = 'Downloading Node.js installer...';
+
+                // Download the installer using curl
+                runCommand(`curl -L -o "${installerPath}" "${installerUrl}"`, () => {
+                    document.getElementById('nodeInstallStatus').textContent = 'Download complete! Opening installer...';
+
+                    // Open the installer
+                    runCommand(`open "${installerPath}"`, () => {
+                        document.getElementById('nodeInstallStatus').textContent = 'Please complete the Node.js installation in the opened window, then click "Continue" below.';
+
+                        // Add continue button
+                        const continueBtn = document.createElement('button');
+                        continueBtn.textContent = 'Continue After Installation';
+                        continueBtn.onclick = verifyNodeInstallation;
+                        continueBtn.style.marginTop = '20px';
+                        document.getElementById('nodeInstallStatus').appendChild(document.createElement('br'));
+                        document.getElementById('nodeInstallStatus').appendChild(continueBtn);
+                    });
+                }, (error) => {
+                    document.getElementById('nodeInstallStatus').textContent = `Download failed: ${error}`;
+                    document.getElementById('installNodeBtn').disabled = false;
+                });
+            });
+        }
+
+        function verifyNodeInstallation() {
+            document.getElementById('nodeInstallStatus').textContent = 'Verifying Node.js installation...';
+
+            const nodeCheck = new Promise((resolve) => {
+                runCommand('node --version', (stdout) => {
+                    console.log('Node.js verification:', stdout.trim());
+                    resolve(true);
+                }, () => resolve(false));
+            });
+
+            const npmCheck = new Promise((resolve) => {
+                runCommand('npm --version', (stdout) => {
+                    console.log('npm verification:', stdout.trim());
+                    resolve(true);
+                }, () => resolve(false));
+            });
+
+            Promise.all([nodeCheck, npmCheck]).then(([nodeInstalled, npmInstalled]) => {
+                if (nodeInstalled && npmInstalled) {
+                    document.getElementById('nodeInstallStatus').textContent = '✅ Node.js installation verified!';
+
+                    // Switch back to main setup screen
+                    document.getElementById('nodeInstallScreen').style.display = 'none';
+                    document.getElementById('mainSetupScreen').style.display = 'block';
+                    document.getElementById('status').textContent = '✅ Node.js is installed. Ready to begin setup!';
+                    document.getElementById('startBtn').disabled = false;
+                } else {
+                    document.getElementById('nodeInstallStatus').textContent = '❌ Node.js installation not detected. Please try installing again.';
+                    document.getElementById('installNodeBtn').disabled = false;
+                }
+            });
+        }
+
+        function showError(message) {
+            document.getElementById('status').textContent = `❌ ${message}`;
+        }
+
         function nextStep() {
             currentStep++;
             if (currentStep < steps.length) {
@@ -248,6 +408,11 @@ SUPABASE_ANON_KEY=your-supabase-anon-key
                 steps[currentStep].command();
             }, 1000);
         }
+
+        // Initialize app - check Node.js first
+        window.onload = function() {
+            checkNodeInstallation();
+        };
 
         function checkStatus() {
             const repoPath = path.join(require('os').homedir(), 'Documents', 'Code', 'mcp-workspace');
