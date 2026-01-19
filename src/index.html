@@ -77,6 +77,38 @@
             margin: 20px 0;
             font-size: 18px;
         }
+        .form-group {
+            margin: 20px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -94,6 +126,45 @@
             <div id="nodeInstallStatus" style="text-align: center; color: #FFC107;"></div>
         </div>
 
+        <!-- Credentials Collection Screen -->
+        <div id="credentialsScreen" style="display: none;">
+            <h2>Configure Credentials</h2>
+            <p>Please enter your Supabase and OpenAI credentials. These will be saved securely to your local .env file.</p>
+            
+            <form id="credentialsForm" style="margin-top: 20px;">
+                <div class="form-group">
+                    <label for="supabaseUrl">Supabase URL (required):</label>
+                    <input type="text" id="supabaseUrl" placeholder="https://your-project.supabase.co" required>
+                    <small style="color: rgba(255,255,255,0.7);">Your Supabase project URL</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="supabaseServiceKey">Supabase Service Role Key (required):</label>
+                    <input type="password" id="supabaseServiceKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." required>
+                    <small style="color: rgba(255,255,255,0.7);">Found in Supabase Dashboard → Settings → API</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="openaiKey">OpenAI API Key (optional):</label>
+                    <input type="password" id="openaiKey" placeholder="sk-...">
+                    <small style="color: rgba(255,255,255,0.7);">Required for AI-powered features</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="postgresUrl">Postgres Connection String (required for schema):</label>
+                    <input type="password" id="postgresUrl" placeholder="postgresql://postgres:[password]@[host]:5432/postgres">
+                    <small style="color: rgba(255,255,255,0.7);">Found in Supabase Dashboard → Settings → Database → Connection string (URI)</small>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button type="button" onclick="skipCredentials()" style="background: #666; margin-right: 10px;">Skip (use defaults)</button>
+                    <button type="submit" id="saveCredentialsBtn">Save & Continue</button>
+                </div>
+            </form>
+            
+            <div id="credentialsStatus" style="text-align: center; margin-top: 20px; color: #FFC107;"></div>
+        </div>
+
         <!-- Main Setup Screen -->
         <div id="mainSetupScreen">
             <div class="progress">
@@ -101,30 +172,43 @@
             </div>
             <div class="status" id="status">Checking Node.js...</div>
 
-        <div class="step pending" id="step1">
-            <strong>Step 1:</strong> Install Homebrew
-        </div>
-        <div class="step pending" id="step2">
-            <strong>Step 2:</strong> Install Node.js and npm
-        </div>
-        <div class="step pending" id="step3">
-            <strong>Step 3:</strong> Install Git
-        </div>
-        <div class="step pending" id="step4">
-            <strong>Step 4:</strong> Clone MCP Workspace
-        </div>
-        <div class="step pending" id="step5">
-            <strong>Step 5:</strong> Install Dependencies
-        </div>
-        <div class="step pending" id="step6">
-            <strong>Step 6:</strong> Configure Environment
-        </div>
+            <div class="step pending" id="step1">
+                <strong>Step 1:</strong> Install Homebrew
+            </div>
+            <div class="step pending" id="step2">
+                <strong>Step 2:</strong> Install Node.js and npm
+            </div>
+            <div class="step pending" id="step3">
+                <strong>Step 3:</strong> Install Git
+            </div>
+            <div class="step pending" id="step4">
+                <strong>Step 4:</strong> Download Repository
+            </div>
+            <div class="step pending" id="step5">
+                <strong>Step 5:</strong> Write .env File
+            </div>
+            <div class="step pending" id="step6">
+                <strong>Step 6:</strong> Apply Database Schema
+            </div>
+            <div class="step pending" id="step7">
+                <strong>Step 7:</strong> Install Dependencies
+            </div>
+            <div class="step pending" id="step8">
+                <strong>Step 8:</strong> Start Server & Verify
+            </div>
 
             <div style="text-align: center; margin-top: 30px;">
                 <button onclick="startSetup()" id="startBtn" disabled>Start Setup</button>
                 <button onclick="checkStatus()" id="checkBtn" disabled>Check Status</button>
             </div>
         </div> <!-- End mainSetupScreen -->
+
+        <div style="margin-top: 20px;">
+            <h3 style="margin-bottom: 10px;">Log Output</h3>
+            <div id="logOutput">
+                <div id="logContent"></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -137,10 +221,22 @@
             { name: 'Install Homebrew', command: installHomebrew },
             { name: 'Install Node.js', command: installNode },
             { name: 'Install Git', command: installGit },
-            { name: 'Download Repository', command: downloadAndExtractRepo }, // Changed from cloneRepo
+            { name: 'Download Repository', command: downloadAndExtractRepo },
+            { name: 'Write .env File', command: writeEnvFile },
+            { name: 'Apply Database Schema', command: applySchema },
             { name: 'Install Dependencies', command: installDeps },
-            { name: 'Configure Environment', command: configureEnv }
+            { name: 'Start Server & Verify', command: startServerAndPoll }
         ];
+
+        function addLog(message, type='info'){
+            const logContent = document.getElementById('logContent');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.color = type === 'error' ? '#f44336' : '#fff';
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContent.appendChild(logEntry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
 
         function updateProgress(step) {
             const progress = ((step + 1) / steps.length) * 100;
@@ -161,9 +257,12 @@
         }
 
         function runCommand(command, callback, errorCallback) {
+            addLog(`Executing: ${command}`);
             exec(command, (error, stdout, stderr) => {
+                if (stdout) addLog(stdout.trim());
+                if (stderr) addLog(stderr.trim(), 'error');
                 if (error) {
-                    console.error(`Error: ${error}`);
+                    addLog(`Error: ${error.message}`, 'error');
                     if (errorCallback) {
                         errorCallback(error);
                     } else {
@@ -182,12 +281,6 @@
             });
         }
 
-        function installNode() {
-            runCommand('brew install node', () => {
-                nextStep();
-            });
-        }
-
         function installGit() {
             runCommand('brew install git', () => {
                 nextStep();
@@ -195,6 +288,7 @@
         }
 
         function downloadAndExtractRepo() {
+
             const tmpDir = path.join(require('os').homedir(), 'StudyMCP', 'tmp');
             const extractDir = path.join(tmpDir, 'extract');
             const finalRepoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace');
@@ -206,13 +300,25 @@
             document.getElementById('status').textContent = 'Creating directories...';
             
             // Step 1: Create directories
+
+            addLog('Starting repository download...');
+            addLog(`Target directory: ${finalRepoPath}`);
+            addLog(`Download URL: ${zipUrl}`);
+
             runCommand(`mkdir -p "${tmpDir}" "${extractDir}"`, () => {
                 document.getElementById('status').textContent = 'Downloading repository ZIP...';
                 
                 // Step 2: Download ZIP
                 runCommand(`curl -L -o "${zipPath}" "${zipUrl}"`, () => {
                     document.getElementById('status').textContent = 'Extracting ZIP file...';
-                    
+                    addLog('Download complete!');
+                    try {
+                        const stats = fs.statSync(zipPath);
+                        addLog(`File size: ${stats.size} bytes`);
+                    } catch (err) {
+                        addLog(`File size: Unable to determine`);
+                    }
+                    addLog(`Extracting to: ${extractDir}`);
                     // Step 3: Extract ZIP
                     runCommand(`unzip -q "${zipPath}" -d "${extractDir}"`, () => {
                         document.getElementById('status').textContent = 'Moving repository to final location...';
@@ -236,20 +342,63 @@
             });
         }
 
-        function installDeps() {
-            const repoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace'); // Updated path
-            runCommand(`cd "${repoPath}" && npm install`, () => {
-                nextStep();
-            });
+        function writeEnvFile() {
+            // Show credentials screen instead of auto-writing
+            document.getElementById('mainSetupScreen').style.display = 'none';
+            document.getElementById('credentialsScreen').style.display = 'block';
+            document.getElementById('status').textContent = 'Please configure your credentials';
+            
+            // Set up form submission
+            document.getElementById('credentialsForm').onsubmit = handleCredentialsSubmit;
         }
 
-        function configureEnv() {
-            const repoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace'); 
-            const envPath = path.join(repoPath, '.env');
+        function handleCredentialsSubmit(event) {
+            event.preventDefault();
+            
+            const supabaseUrl = document.getElementById('supabaseUrl').value.trim();
+            const supabaseServiceKey = document.getElementById('supabaseServiceKey').value.trim();
+            const openaiKey = document.getElementById('openaiKey').value.trim();
+            const postgresUrl = document.getElementById('postgresUrl').value.trim();
+            
+            if (!supabaseUrl || !supabaseServiceKey) {
+                document.getElementById('credentialsStatus').textContent = '❌ Supabase URL and Service Key are required';
+                return;
+            }
+            
+            document.getElementById('saveCredentialsBtn').disabled = true;
+            document.getElementById('credentialsStatus').textContent = 'Saving credentials...';
+            
+            // Write files
+            writeEnvAndMaps(supabaseUrl, supabaseServiceKey, openaiKey, postgresUrl);
+        }
 
-            // Create basic .env template
+        function skipCredentials() {
+            // Use defaults
+            writeEnvAndMaps('', '', '', '');
+        }
+
+        function writeEnvAndMaps(supabaseUrl, supabaseServiceKey, openaiKey, postgresUrl) {
+            const repoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace');
+            const d2lMcpPath = path.join(repoPath, 'd2l-mcp');
+            const envPath = path.join(d2lMcpPath, '.env');
+            const dbPath = path.join(d2lMcpPath, 'src', 'study', 'db');
+            
+            addLog('Writing configuration files...');
+            addLog(`Target directory: ${d2lMcpPath}`);
+            
+            // Generate secure token
+            const crypto = require('crypto');
+            const secureToken = crypto.randomBytes(32).toString('hex');
+            
+            // Create db directory if it doesn't exist
+            if (!fs.existsSync(dbPath)) {
+                fs.mkdirSync(dbPath, { recursive: true });
+                addLog(`Created directory: ${dbPath}`);
+            }
+            
+            // Write .env file
             const envContent = `# MCP Workspace Environment Variables
-# Copy this file and fill in your credentials
+# Generated on ${new Date().toISOString()}
 
 # D2L Brightspace Credentials
 D2L_HOST=learn.yourschool.edu
@@ -260,25 +409,463 @@ D2L_PASSWORD=your-password
 MCP_PORT=3000
 MCP_TRANSPORT=http
 
-# Authentication Token (generate a secure random string)
-STUDY_MCP_TOKEN=your-secure-token-here
+# Authentication Token
+STUDY_MCP_TOKEN=${secureToken}
 
-# Supabase Configuration (for study features)
-SUPABASE_URL=your-supabase-url
-SUPABASE_ANON_KEY=your-supabase-anon-key
+# Supabase Configuration
+${supabaseUrl ? `SUPABASE_URL=${supabaseUrl}` : '# SUPABASE_URL=your-supabase-url'}
+${supabaseServiceKey ? `SUPABASE_SERVICE_ROLE_KEY=${supabaseServiceKey}` : '# SUPABASE_SERVICE_ROLE_KEY=your-service-role-key'}
+# SUPABASE_ANON_KEY=your-anon-key
+
+# OpenAI Configuration
+${openaiKey ? `OPENAI_API_KEY=${openaiKey}` : '# OPENAI_API_KEY=your-openai-api-key'}
+
+# Postgres Connection (for schema application)
+${postgresUrl ? `POSTGRES_URL=${postgresUrl}` : '# POSTGRES_URL=postgresql://postgres:[password]@[host]:5432/postgres'}
 `;
 
             fs.writeFile(envPath, envContent, (err) => {
                 if (err) {
-                    document.getElementById('status').textContent = `Error creating .env: ${err.message}`;
+                    addLog(`Error creating .env: ${err.message}`, 'error');
+                    document.getElementById('credentialsStatus').textContent = `Error: ${err.message}`;
+                    document.getElementById('saveCredentialsBtn').disabled = false;
                     return;
                 }
-                document.getElementById('status').textContent = 'Setup complete! Please edit .env file with your credentials.';
-                document.getElementById('startBtn').disabled = true;
-                document.getElementById('checkBtn').disabled = false;
+                addLog('.env file created successfully');
+                addLog(`Location: ${envPath}`);
+                
+                // Write notes_map.json
+                const notesMapPath = path.join(dbPath, 'notes_map.json');
+                const notesMapContent = JSON.stringify({
+                    "EXAMPLE101": ["./path/to/your/notes.pdf"]
+                }, null, 2);
+                
+                fs.writeFile(notesMapPath, notesMapContent, (err) => {
+                    if (err) {
+                        addLog(`Error creating notes_map.json: ${err.message}`, 'error');
+                    } else {
+                        addLog('notes_map.json created successfully');
+                    }
+                    
+                    // Write piazza_map.json
+                    const piazzaMapPath = path.join(dbPath, 'piazza_map.json');
+                    const piazzaMapContent = JSON.stringify({
+                        "EXAMPLE101": "your-piazza-class-id"
+                    }, null, 2);
+                    
+                    fs.writeFile(piazzaMapPath, piazzaMapContent, (err) => {
+                        if (err) {
+                            addLog(`Error creating piazza_map.json: ${err.message}`, 'error');
+                        } else {
+                            addLog('piazza_map.json created successfully');
+                        }
+                        
+                        // Clear form and continue
+                        document.getElementById('credentialsForm').reset();
+                        document.getElementById('credentialsScreen').style.display = 'none';
+                        document.getElementById('mainSetupScreen').style.display = 'block';
+                        
+                        addLog('✅ Configuration files written successfully');
+                        document.getElementById('status').textContent = 'Configuration saved!';
+                        nextStep();
+                    });
+                });
             });
         }
 
+
+        function applySchema() {
+            const repoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace');
+            const schemaPath = path.join(repoPath, 'setup', 'schema.sql');
+            const d2lMcpPath = path.join(repoPath, 'd2l-mcp');
+            const envPath = path.join(d2lMcpPath, '.env');
+
+            addLog('Applying database schema...');
+            addLog(`Schema file: ${schemaPath}`);
+
+            // Check if schema file exists
+            if (!fs.existsSync(schemaPath)) {
+                addLog('Schema file not found, skipping...', 'error');
+                addLog('Note: You can apply schema manually in Supabase dashboard');
+                nextStep();
+                return;
+            }
+
+            // Read .env to get Postgres URL
+            if (!fs.existsSync(envPath)) {
+                addLog('.env file not found. Skipping schema application.', 'error');
+                addLog('Please configure credentials first or apply schema manually.');
+                nextStep();
+                return;
+            }
+
+            const envContent = fs.readFileSync(envPath, 'utf8');
+            const postgresUrlMatch = envContent.match(/POSTGRES_URL=(.+)/);
+            
+            if (!postgresUrlMatch || postgresUrlMatch[1].startsWith('#')) {
+                addLog('Postgres connection string not found in .env', 'error');
+                addLog('Skipping automatic schema application.');
+                addLog('You can apply schema manually in Supabase SQL Editor.');
+                nextStep();
+                return;
+            }
+
+            const postgresUrl = postgresUrlMatch[1].trim();
+            const schemaContent = fs.readFileSync(schemaPath, 'utf8');
+            
+            addLog(`Schema file found (${schemaContent.length} bytes)`);
+            addLog('Connecting to Postgres database...');
+
+            // Connect to Postgres and execute schema
+            let Client;
+            try {
+                const pg = require('pg');
+                Client = pg.Client;
+            } catch (error) {
+                addLog('❌ pg module not found. Installing...', 'error');
+                addLog('Please run: npm install pg');
+                addLog('Or apply schema manually in Supabase SQL Editor.');
+                nextStep();
+                return;
+            }
+            const client = new Client({
+                connectionString: postgresUrl
+            });
+
+            client.connect()
+                .then(() => {
+                    addLog('✅ Connected to Postgres database');
+                    addLog('Executing schema SQL...');
+                    
+                    // Execute the schema SQL
+                    return client.query(schemaContent);
+                })
+                .then(() => {
+                    addLog('✅ Schema SQL executed successfully');
+                    addLog('Verifying schema application...');
+                    
+                    // Run verification queries
+                    const verificationQueries = [
+                        "SELECT to_regclass('public.note_sections') as note_sections",
+                        "SELECT to_regclass('public.tasks') as tasks",
+                        "SELECT to_regclass('public.piazza_posts') as piazza_posts",
+                        "SELECT to_regproc('public.match_note_sections') as match_note_sections",
+                        "SELECT to_regproc('public.match_piazza_posts') as match_piazza_posts"
+                    ];
+
+                    return Promise.all(verificationQueries.map(query => client.query(query)));
+                })
+                .then((results) => {
+                    let allValid = true;
+                    const checks = [
+                        { name: 'note_sections table', result: results[0] },
+                        { name: 'tasks table', result: results[1] },
+                        { name: 'piazza_posts table', result: results[2] },
+                        { name: 'match_note_sections function', result: results[3] },
+                        { name: 'match_piazza_posts function', result: results[4] }
+                    ];
+
+                    checks.forEach(check => {
+                        const value = check.result.rows[0][Object.keys(check.result.rows[0])[0]];
+                        if (value === null) {
+                            addLog(`❌ ${check.name} not found`, 'error');
+                            allValid = false;
+                        } else {
+                            addLog(`✅ ${check.name} verified`);
+                        }
+                    });
+
+                    if (!allValid) {
+                        addLog('⚠️ Some schema elements are missing. Please check manually.', 'error');
+                    } else {
+                        addLog('✅ All schema elements verified successfully!');
+                    }
+
+                    return client.end();
+                })
+                .then(() => {
+                    addLog('Database connection closed');
+                    nextStep();
+                })
+                .catch((error) => {
+                    addLog(`❌ Schema application failed: ${error.message}`, 'error');
+                    addLog('You can apply the schema manually in Supabase SQL Editor.');
+                    addLog(`Schema file location: ${schemaPath}`);
+                    
+                    client.end().catch(() => {});
+                    nextStep();
+                });
+        }
+
+
+        function installDeps() {
+            const repoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace');
+            const d2lMcpPath = path.join(repoPath, 'd2l-mcp');
+
+            addLog('Installing D2L MCP dependencies...');
+            addLog(`Working directory: ${d2lMcpPath}`);
+
+            runCommand(`cd "${d2lMcpPath}" && npm install`, (stdout) => {
+                addLog('Dependencies installed successfully');
+                nextStep();
+            }, (error) => {
+                addLog(`Dependency installation failed: ${error.message}`, 'error');
+                document.getElementById('status').textContent = `Dependency installation failed: ${error.message}`;
+            });
+        }
+
+
+        function startServerAndPoll() {
+            const repoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace');
+            const d2lMcpPath = path.join(repoPath, 'd2l-mcp');
+
+            addLog('Starting D2L MCP server...');
+            addLog(`Working directory: ${d2lMcpPath}`);
+            addLog('Running: npm run mcp:launch');
+            
+            // Start server with mcp:launch (keeps process alive, streams logs)
+            const serverProcess = exec(`cd "${d2lMcpPath}" && npm run mcp:launch`, (error, stdout, stderr) => {
+                if (error) {
+                    addLog(`Server error: ${error.message}`, 'error');
+                }
+            });
+            
+            // Stream stdout to logs
+            serverProcess.stdout.on('data', (data) => {
+                const output = data.toString().trim();
+                if (output) {
+                    addLog(`Server: ${output}`);
+                }
+            });
+            
+            // Stream stderr to logs
+            serverProcess.stderr.on('data', (data) => {
+                const output = data.toString().trim();
+                if (output) {
+                    addLog(`Server: ${output}`, 'error');
+                }
+            });
+
+            addLog('Server process started (running in background)');
+            addLog('Polling for server health...');
+    
+            let pollCount = 0;
+            const maxPolls = 60; // Increased to 60 seconds
+            const pollInterval = 1000; // 1 second
+
+            const pollHealth = setInterval(() => {
+                pollCount++;
+                addLog(`Health check attempt: ${pollCount}/${maxPolls}...`);
+
+                runCommand(`curl -s http://localhost:3000/mcp || echo "not-ready"`, (stdout) => {
+                    if (stdout.includes('not-ready') || stdout.trim() === ''){
+                        if (pollCount >= maxPolls) {
+                            clearInterval(pollHealth);
+                            addLog('Server health check timeout', 'error');
+                            addLog('Server may still be starting. Check logs manually.');
+                            addLog('You can check server status at: http://localhost:3000/mcp');
+                            document.getElementById('status').textContent = 'Setup complete (server starting)';
+                            document.getElementById('startBtn').disabled = true;
+                            document.getElementById('checkBtn').disabled = false;
+                            
+                            // Generate launch files even if server not ready
+                            generateLaunchFiles();
+                        }
+                    } else {
+                        clearInterval(pollHealth);
+                        addLog('✅ Server is responding!');
+                        addLog(`Health response: ${stdout.substring(0, 100)}...`);
+                        addLog('✅ MCP server is running at http://localhost:3000/mcp');
+                        document.getElementById('status').textContent = '✅ Setup complete! Server is running.';
+                        document.getElementById('startBtn').disabled = true;
+                        document.getElementById('checkBtn').disabled = false;
+                        
+                        // Generate launch files
+                        generateLaunchFiles();
+                    }
+                });
+            }, pollInterval);
+        }
+
+        function generateLaunchFiles() {
+            const repoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace');
+            const setupPath = path.join(repoPath, 'setup');
+            const vscodePath = path.join(repoPath, '.vscode');
+            
+            addLog('Generating launch configuration files...');
+            
+            // Create directories if needed
+            if (!fs.existsSync(setupPath)) {
+                fs.mkdirSync(setupPath, { recursive: true });
+            }
+            if (!fs.existsSync(vscodePath)) {
+                fs.mkdirSync(vscodePath, { recursive: true });
+            }
+            
+            // Read .env to get token
+            const envPath = path.join(repoPath, 'd2l-mcp', '.env');
+            let authToken = '';
+            if (fs.existsSync(envPath)) {
+                const envContent = fs.readFileSync(envPath, 'utf8');
+                const tokenMatch = envContent.match(/STUDY_MCP_TOKEN=(.+)/);
+                if (tokenMatch && !tokenMatch[1].startsWith('#')) {
+                    authToken = tokenMatch[1].trim();
+                }
+            }
+            
+            // 1. Generate .vscode/mcp.json
+            const vscodeMcpJson = {
+                "servers": {
+                    "study-mcp": {
+                        "type": "http",
+                        "url": "http://localhost:3000/mcp"
+                    }
+                }
+            };
+            
+            if (authToken) {
+                vscodeMcpJson.servers["study-mcp"].headers = {
+                    "Authorization": `Bearer ${authToken}`
+                };
+            }
+            
+            const vscodeMcpPath = path.join(vscodePath, 'mcp.json');
+            fs.writeFileSync(vscodeMcpPath, JSON.stringify(vscodeMcpJson, null, 2));
+            addLog('✅ Created .vscode/mcp.json');
+            
+            // 2. Generate setup/launch.http.json
+            const launchHttpJson = {
+                "name": "Study MCP (HTTP)",
+                "transport": "http",
+                "url": "http://localhost:3000/mcp"
+            };
+            
+            if (authToken) {
+                launchHttpJson.headers = {
+                    "Authorization": `Bearer ${authToken}`
+                };
+            }
+            
+            const launchHttpPath = path.join(setupPath, 'launch.http.json');
+            fs.writeFileSync(launchHttpPath, JSON.stringify(launchHttpJson, null, 2));
+            addLog('✅ Created setup/launch.http.json');
+            
+            // 3. Generate setup/poke.md
+            const pokeMd = `# Connecting StudyMCP to Poke
+
+## Prerequisites
+- Poke installed and running
+- StudyMCP server running at http://localhost:3000/mcp
+
+## Setup Steps
+
+1. Open Poke settings
+2. Navigate to MCP Servers configuration
+3. Add new server with the following configuration:
+
+\`\`\`json
+{
+  "name": "study-mcp",
+  "type": "http",
+  "url": "http://localhost:3000/mcp"${authToken ? `,
+  "headers": {
+    "Authorization": "Bearer ${authToken}"
+  }` : ''}
+}
+\`\`\`
+
+4. Save and restart Poke
+5. The StudyMCP server should now be available in Poke
+
+## Troubleshooting
+
+- Ensure the server is running: \`curl http://localhost:3000/mcp\`
+- Check server logs for errors
+- Verify port 3000 is not blocked by firewall
+${authToken ? `- Verify authentication token is correct` : ''}
+`;
+
+            const pokeMdPath = path.join(setupPath, 'poke.md');
+            fs.writeFileSync(pokeMdPath, pokeMd);
+            addLog('✅ Created setup/poke.md');
+            
+            // 4. Generate setup/README.md
+            const setupReadme = `# StudyMCP Setup Complete! 🎉
+
+Your StudyMCP server has been successfully installed and configured.
+
+## Server Status
+
+- **URL**: http://localhost:3000/mcp
+- **Status**: Running
+${authToken ? `- **Authentication**: Enabled (Bearer token)` : `- **Authentication**: Not configured`}
+
+## Quick Start
+
+### VS Code
+The VS Code MCP configuration has been created at \`.vscode/mcp.json\`. 
+Restart VS Code to connect to the server.
+
+### Poke
+See \`setup/poke.md\` for Poke-specific setup instructions.
+
+### Claude Desktop
+Add to your Claude Desktop config (\`~/Library/Application Support/Claude/claude_desktop_config.json\`):
+
+\`\`\`json
+{
+  "mcpServers": {
+    "studymcp": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-http", "http://localhost:3000/mcp"]${authToken ? `,
+      "env": {
+        "BEARER_TOKEN": "${authToken}"
+      }` : ''}
+    }
+  }
+}
+\`\`\`
+
+### Raycast
+Use the HTTP transport configuration from \`setup/launch.http.json\`.
+
+## Configuration Files
+
+- **Environment**: \`d2l-mcp/.env\`
+- **Notes Map**: \`d2l-mcp/src/study/db/notes_map.json\`
+- **Piazza Map**: \`d2l-mcp/src/study/db/piazza_map.json\`
+
+## Next Steps
+
+1. Edit \`d2l-mcp/.env\` with your D2L Brightspace credentials
+2. Update notes and Piazza maps with your course information
+3. Restart the server: \`cd d2l-mcp && npm run mcp:launch\`
+
+## Server Management
+
+- **Start**: \`cd d2l-mcp && npm run mcp:launch\`
+- **Stop**: Press Ctrl+C in the terminal
+- **Check Status**: \`curl http://localhost:3000/mcp\`
+
+## Support
+
+For issues or questions, check the main repository README.
+`;
+
+            const setupReadmePath = path.join(setupPath, 'README.md');
+            fs.writeFileSync(setupReadmePath, setupReadme);
+            addLog('✅ Created setup/README.md');
+            
+            addLog('✅ All launch configuration files generated successfully!');
+            addLog('📁 Files created in:');
+            addLog(`   - ${vscodeMcpPath}`);
+            addLog(`   - ${launchHttpPath}`);
+            addLog(`   - ${path.join(setupPath, 'poke.md')}`);
+            addLog(`   - ${setupReadmePath}`);
+        }
+
+
+        
         // Node.js installation functions
         function checkNodeInstallation() {
             document.getElementById('status').textContent = 'Checking Node.js installation...';
@@ -286,20 +873,20 @@ SUPABASE_ANON_KEY=your-supabase-anon-key
             // Check both node and npm
             const nodeCheck = new Promise((resolve) => {
                 runCommand('node --version', (stdout) => {
-                    console.log('Node.js found:', stdout.trim());
+                    addLog(`Node.js found: ${stdout.trim()}`);
                     resolve(true);
                 }, () => {
-                    console.log('Node.js not found');
+                    addLog('Node.js not found', 'error');
                     resolve(false);
                 });
             });
 
             const npmCheck = new Promise((resolve) => {
                 runCommand('npm --version', (stdout) => {
-                    console.log('npm found:', stdout.trim());
+                    addLog(`npm found: ${stdout.trim()}`);
                     resolve(true);
                 }, () => {
-                    console.log('npm not found');
+                    addLog('npm not found', 'error');
                     resolve(false);
                 });
             });
