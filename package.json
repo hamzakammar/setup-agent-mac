@@ -3,35 +3,19 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish",
+    "start": "electron .",
+    "dev": "electron .",
+    "build": "electron-builder",
     "lint": "echo \"No linting configured\""
   },
   "keywords": [],
   "author": "Hamza Ammar",
   "license": "MIT",
   "description": "Mac setup agent for MCP workspace",
-  "config": {
-    "forge": {
-      "packagerConfig": {},
-      "makers": [
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
-        }
-      ]
-    }
-  },
   "dependencies": {
     "pg": "^8.11.3"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^7.4.0",
-    "@electron-forge/maker-zip": "^1.0.0",
     "electron": "^31.3.1"
   }
 }

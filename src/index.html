@@ -5,70 +5,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mac Setup Agent</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+        html {
+            background: #0a0a0a;
+            color: #e0e0e0;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            padding: 0;
+            background: #0a0a0a;
+            color: #e0e0e0;
             min-height: 100vh;
+            width: 100%;
         }
         .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
+            max-width: 100%;
+            margin: 0;
+            background: #0a0a0a;
+            padding: 40px;
+            min-height: 100vh;
+            width: 100%;
         }
         h1 {
             text-align: center;
             margin-bottom: 30px;
             font-size: 2.5em;
+            color: #e0e0e0;
+        }
+        h2 {
+            color: #e0e0e0;
+            margin-top: 0;
+        }
+        h3 {
+            color: #e0e0e0;
+        }
+        p {
+            color: #d0d0d0;
+        }
+        label {
+            color: #e0e0e0;
+        }
+        strong {
+            color: #e0e0e0;
+        }
+        code {
+            color: #4a9eff;
+        }
+        small {
+            color: #888;
         }
         .step {
-            background: rgba(255, 255, 255, 0.2);
+            background: #252525;
             padding: 15px;
             margin: 10px 0;
             border-radius: 5px;
-            border-left: 4px solid #4CAF50;
+            border-left: 3px solid #404040;
         }
         .step.completed {
-            border-left-color: #4CAF50;
-            background: rgba(76, 175, 80, 0.2);
+            border-left-color: #4a9eff;
+            background: #1e2a35;
         }
         .step.pending {
-            border-left-color: #FFC107;
+            border-left-color: #666;
         }
         button {
-            background: #4CAF50;
-            color: white;
-            border: none;
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border: 1px solid #404040;
             padding: 12px 24px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
             margin: 5px;
-            transition: background 0.3s;
+            transition: all 0.2s;
         }
         button:hover {
-            background: #45a049;
+            background: #353535;
+            border-color: #4a9eff;
         }
         button:disabled {
-            background: #cccccc;
+            background: #1a1a1a;
+            color: #666;
+            border-color: #2a2a2a;
             cursor: not-allowed;
         }
         .progress {
             width: 100%;
             height: 20px;
-            background: rgba(255, 255, 255, 0.2);
+            background: #252525;
             border-radius: 10px;
             overflow: hidden;
             margin: 20px 0;
+            border: 1px solid #404040;
         }
         .progress-bar {
             height: 100%;
-            background: #4CAF50;
+            background: #4a9eff;
             width: 0%;
             transition: width 0.3s;
         }
@@ -89,20 +124,20 @@
         .form-group input {
             width: 100%;
             padding: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid #404040;
             border-radius: 5px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            background: #252525;
+            color: #e0e0e0;
             font-size: 14px;
             box-sizing: border-box;
         }
         .form-group input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: #666;
         }
         .form-group input:focus {
             outline: none;
-            border-color: #4CAF50;
-            background: rgba(255, 255, 255, 0.15);
+            border-color: #4a9eff;
+            background: #2a2a2a;
         }
         .form-group small {
             display: block;
@@ -113,7 +148,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Mac Setup Agent</h1>
+        <h1>Mac Setup Agent</h1>
 
         <!-- Node.js Installation Screen -->
         <div id="nodeInstallScreen" style="display: none;">
@@ -121,48 +156,123 @@
             <p>Node.js is required to run the MCP workspace. Would you like to install it now?</p>
             <div style="text-align: center; margin: 30px 0;">
                 <button onclick="installNode()" id="installNodeBtn">Install Node.js</button>
-                <button onclick="showError('Node.js is required to continue.')" style="background: #f44336;">Cancel</button>
+                <button onclick="showError('Node.js is required to continue.')" style="background: #3a3a3a; border-color: #555;">Cancel</button>
             </div>
-            <div id="nodeInstallStatus" style="text-align: center; color: #FFC107;"></div>
+            <div id="nodeInstallStatus" style="text-align: center; color: #4a9eff;"></div>
         </div>
 
         <!-- Credentials Collection Screen -->
         <div id="credentialsScreen" style="display: none;">
             <h2>Configure Credentials</h2>
-            <p>Please enter your Supabase and OpenAI credentials. These will be saved securely to your local .env file.</p>
+            <p>Please enter all your credentials. These will be saved securely to your local .env file.</p>
             
             <form id="credentialsForm" style="margin-top: 20px;">
+                <h3 style="margin-top: 20px; margin-bottom: 10px; color: #4a9eff;">Supabase Configuration</h3>
+                
                 <div class="form-group">
                     <label for="supabaseUrl">Supabase URL (required):</label>
                     <input type="text" id="supabaseUrl" placeholder="https://your-project.supabase.co" required>
-                    <small style="color: rgba(255,255,255,0.7);">Your Supabase project URL</small>
+                    <small style="color: #888;">Your Supabase project URL</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="supabaseServiceKey">Supabase Service Role Key (required):</label>
                     <input type="password" id="supabaseServiceKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." required>
-                    <small style="color: rgba(255,255,255,0.7);">Found in Supabase Dashboard → Settings → API</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="openaiKey">OpenAI API Key (optional):</label>
-                    <input type="password" id="openaiKey" placeholder="sk-...">
-                    <small style="color: rgba(255,255,255,0.7);">Required for AI-powered features</small>
+                    <small style="color: #888;">Found in Supabase Dashboard → Settings → API</small>
                 </div>
                 
                 <div class="form-group">
                     <label for="postgresUrl">Postgres Connection String (required for schema):</label>
-                    <input type="password" id="postgresUrl" placeholder="postgresql://postgres:[password]@[host]:5432/postgres">
-                    <small style="color: rgba(255,255,255,0.7);">Found in Supabase Dashboard → Settings → Database → Connection string (URI)</small>
+                    <input type="password" id="postgresUrl" placeholder="postgresql://postgres:[password]@[host]:5432/postgres" required>
+                    <small style="color: #888;">Found in Supabase Dashboard → Settings → Database → Connection string (URI)</small>
+                </div>
+                
+                <h3 style="margin-top: 30px; margin-bottom: 10px; color: #4a9eff;">D2L Brightspace Configuration</h3>
+                
+                <div class="form-group">
+                    <label for="d2lHost">D2L Host (required):</label>
+                    <input type="text" id="d2lHost" placeholder="learn.yourschool.edu" required>
+                    <small style="color: #888;">Your D2L Brightspace hostname</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="d2lUsername">D2L Username (required):</label>
+                    <input type="text" id="d2lUsername" placeholder="your-username" required>
+                    <small style="color: #888;">Your D2L Brightspace username</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="d2lPassword">D2L Password (required):</label>
+                    <input type="password" id="d2lPassword" placeholder="your-password" required>
+                    <small style="color: #888;">Your D2L Brightspace password</small>
+                </div>
+                
+                <h3 style="margin-top: 30px; margin-bottom: 10px; color: #4a9eff;">OpenAI Configuration</h3>
+                
+                <div class="form-group">
+                    <label for="openaiKey">OpenAI API Key (required):</label>
+                    <input type="password" id="openaiKey" placeholder="sk-..." required>
+                    <small style="color: #888;">Required for AI-powered features</small>
                 </div>
                 
                 <div style="text-align: center; margin-top: 30px;">
-                    <button type="button" onclick="skipCredentials()" style="background: #666; margin-right: 10px;">Skip (use defaults)</button>
-                    <button type="submit" id="saveCredentialsBtn">Save & Continue</button>
+                    <button type="submit" id="saveCredentialsBtn">Save All & Continue</button>
                 </div>
             </form>
             
-            <div id="credentialsStatus" style="text-align: center; margin-top: 20px; color: #FFC107;"></div>
+            <div id="credentialsStatus" style="text-align: center; margin-top: 20px; color: #4a9eff;"></div>
+        </div>
+
+        <!-- Platform Launch Screen -->
+        <div id="platformLaunchScreen" style="display: none;">
+            <h2>Setup Complete!</h2>
+            <p>Your StudyMCP server is running. Choose how you'd like to connect:</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 30px;">
+                <div style="border: 1px solid #404040; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; background: #252525; transition: all 0.2s;" onmouseover="this.style.borderColor='#4a9eff'; this.style.background='#2a2a2a';" onmouseout="this.style.borderColor='#404040'; this.style.background='#252525';" onclick="launchPlatform('vscode')">
+                    <h3 style="margin-top: 0; color: #e0e0e0;">VS Code</h3>
+                    <p style="color: #888;">Configuration already created. Restart VS Code to connect.</p>
+                    <button style="margin-top: 10px;">Open VS Code</button>
+                </div>
+                
+                <div style="border: 1px solid #404040; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; background: #252525; transition: all 0.2s;" onmouseover="this.style.borderColor='#4a9eff'; this.style.background='#2a2a2a';" onmouseout="this.style.borderColor='#404040'; this.style.background='#252525';" onclick="launchPlatform('poke')">
+                    <h3 style="margin-top: 0; color: #e0e0e0;">Poke</h3>
+                    <p style="color: #888;">See setup/poke.md for instructions</p>
+                    <button style="margin-top: 10px;">View Instructions</button>
+                </div>
+                
+                <div style="border: 1px solid #404040; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; background: #252525; transition: all 0.2s;" onmouseover="this.style.borderColor='#4a9eff'; this.style.background='#2a2a2a';" onmouseout="this.style.borderColor='#404040'; this.style.background='#252525';" onclick="launchPlatform('claude')">
+                    <h3 style="margin-top: 0; color: #e0e0e0;">Claude Desktop</h3>
+                    <p style="color: #888;">Add to Claude Desktop config</p>
+                    <button style="margin-top: 10px;">View Config</button>
+                </div>
+                
+                <div style="border: 1px solid #404040; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; background: #252525; transition: all 0.2s;" onmouseover="this.style.borderColor='#4a9eff'; this.style.background='#2a2a2a';" onmouseout="this.style.borderColor='#404040'; this.style.background='#252525';" onclick="launchPlatform('test')">
+                    <h3 style="margin-top: 0; color: #e0e0e0;">Test Server</h3>
+                    <p style="color: #888;">Test the MCP server endpoint</p>
+                    <button style="margin-top: 10px;">Test Connection</button>
+                </div>
+            </div>
+            
+            <!-- Instructions Display Area -->
+            <div id="platformInstructions" style="display: none; margin-top: 30px; padding: 20px; background: #252525; border-radius: 8px; max-height: 500px; overflow-y: auto; border: 1px solid #404040;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin-top: 0; color: #e0e0e0;">Instructions</h3>
+                    <button id="copyInstructionsBtn" onclick="copyInstructions()" style="display: none; padding: 5px 15px; font-size: 12px;">Copy Config</button>
+                </div>
+                <div id="instructionsContent" style="white-space: pre-wrap; font-family: 'Monaco', 'Menlo', 'Courier New', monospace; font-size: 13px; line-height: 1.8; color: #d0d0d0; background: #1a1a1a; padding: 15px; border-radius: 5px; border: 1px solid #404040;"></div>
+            </div>
+            
+            <div style="margin-top: 30px; padding: 20px; background: #252525; border-radius: 8px; border: 1px solid #404040;">
+                <h3 style="margin-top: 0; color: #e0e0e0;">Server Information</h3>
+                <p><strong style="color: #e0e0e0;">URL:</strong> <code style="background: #1a1a1a; padding: 4px 8px; border-radius: 4px; color: #4a9eff; border: 1px solid #404040;">http://localhost:3000/mcp</code></p>
+                <p><strong style="color: #e0e0e0;">Token:</strong> <code style="background: #1a1a1a; padding: 4px 8px; border-radius: 4px; color: #4a9eff; border: 1px solid #404040;" id="displayToken">Loading...</code></p>
+                <button onclick="copyToken()" style="margin-top: 10px;">Copy Token</button>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="showMainScreen()" style="background: #2a2a2a;">Back to Setup</button>
+            </div>
         </div>
 
         <!-- Main Setup Screen -->
@@ -204,8 +314,11 @@
         </div> <!-- End mainSetupScreen -->
 
         <div style="margin-top: 20px;">
-            <h3 style="margin-bottom: 10px;">Log Output</h3>
-            <div id="logOutput">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="margin: 0; color: #e0e0e0;">Log Output</h3>
+                <button id="toggleLogsBtn" onclick="toggleLogs()" style="background: #2a2a2a; padding: 5px 15px; font-size: 12px; border: 1px solid #404040; border-radius: 4px; cursor: pointer; color: #e0e0e0;">Show All</button>
+            </div>
+            <div id="logOutput" style="max-height: 250px; overflow-y: auto; background: #1a1a1a; padding: 10px; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 12px; border: 1px solid #404040;">
                 <div id="logContent"></div>
             </div>
         </div>
@@ -228,14 +341,71 @@
             { name: 'Start Server & Verify', command: startServerAndPoll }
         ];
 
+        // Store all logs in memory
+        let allLogs = [];
+        let showAllLogs = false;
+        const MAX_VISIBLE_LOGS = 10;
+
         function addLog(message, type='info'){
-            const logContent = document.getElementById('logContent');
             const timestamp = new Date().toLocaleTimeString();
-            const logEntry = document.createElement('div');
-            logEntry.style.color = type === 'error' ? '#f44336' : '#fff';
-            logEntry.textContent = `[${timestamp}] ${message}`;
-            logContent.appendChild(logEntry);
-            logContent.scrollTop = logContent.scrollHeight;
+            const logEntry = {
+                timestamp: timestamp,
+                message: message,
+                type: type,
+                text: `[${timestamp}] ${message}`
+            };
+            
+            // Add to array
+            allLogs.push(logEntry);
+            
+            // Update display
+            updateLogDisplay();
+        }
+        
+        function updateLogDisplay() {
+            const logContent = document.getElementById('logContent');
+            const toggleBtn = document.getElementById('toggleLogsBtn');
+            const logOutput = document.getElementById('logOutput');
+            
+            // Clear current display
+            logContent.innerHTML = '';
+            
+            // Determine which logs to show
+            let logsToShow = [];
+            if (showAllLogs) {
+                logsToShow = allLogs;
+                toggleBtn.textContent = 'Show Recent';
+                // Increase max height when showing all
+                logOutput.style.maxHeight = '500px';
+            } else {
+                // Show only last MAX_VISIBLE_LOGS
+                logsToShow = allLogs.slice(-MAX_VISIBLE_LOGS);
+                const totalCount = allLogs.length;
+                if (totalCount > MAX_VISIBLE_LOGS) {
+                    toggleBtn.textContent = `Show All (${totalCount} total)`;
+                } else {
+                    toggleBtn.textContent = 'Show All';
+                }
+                // Reset max height when collapsed
+                logOutput.style.maxHeight = '250px';
+            }
+            
+            // Render logs
+            logsToShow.forEach(logEntry => {
+                const div = document.createElement('div');
+                div.style.color = logEntry.type === 'error' ? '#ff6b6b' : '#e0e0e0';
+                div.style.padding = '2px 0';
+                div.textContent = logEntry.text;
+                logContent.appendChild(div);
+            });
+            
+            // Scroll to bottom
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+        
+        function toggleLogs() {
+            showAllLogs = !showAllLogs;
+            updateLogDisplay();
         }
 
         function updateProgress(step) {
@@ -258,32 +428,101 @@
 
         function runCommand(command, callback, errorCallback) {
             addLog(`Executing: ${command}`);
-            exec(command, (error, stdout, stderr) => {
-                if (stdout) addLog(stdout.trim());
-                if (stderr) addLog(stderr.trim(), 'error');
-                if (error) {
-                    addLog(`Error: ${error.message}`, 'error');
-                    if (errorCallback) {
-                        errorCallback(error);
-                    } else {
-                        document.getElementById('status').textContent = `Error: ${error.message}`;
+            try {
+                exec(command, { maxBuffer: 1024 * 1024 * 10 }, (error, stdout, stderr) => {
+                    if (stdout && stdout.trim()) addLog(stdout.trim());
+                    if (stderr && stderr.trim() && !error) addLog(stderr.trim());
+                    
+                    if (error) {
+                        const errorMsg = error.message || String(error);
+                        addLog(`Command failed: ${errorMsg}`, 'error');
+                        if (errorCallback) {
+                            errorCallback(error);
+                        } else {
+                            document.getElementById('status').textContent = `Error: ${errorMsg}`;
+                        }
+                        return;
                     }
-                    return;
+                    
+                    if (callback) {
+                        try {
+                            callback(stdout || '', stderr || '');
+                        } catch (cbError) {
+                            addLog(`Callback error: ${cbError.message}`, 'error');
+                        }
+                    }
+                });
+            } catch (err) {
+                addLog(`Failed to execute command: ${err.message}`, 'error');
+                if (errorCallback) {
+                    errorCallback(err);
                 }
-                console.log(`Output: ${stdout}`);
-                if (callback) callback(stdout, stderr);
-            });
+            }
         }
 
         function installHomebrew() {
-            runCommand('/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"', () => {
+            addLog('Checking if Homebrew is installed...');
+            
+            // Check if Homebrew is already installed
+            runCommand('which brew', (stdout) => {
+                if (stdout.trim()) {
+                    addLog('Homebrew is already installed');
+                    addLog(`Homebrew location: ${stdout.trim()}`);
+                    nextStep();
+                } else {
+                    addLog('Homebrew is not installed');
+                    addLog('Homebrew installation requires sudo access and interactive terminal.');
+                    addLog('Skipping Homebrew installation (not required for this setup).');
+                    addLog('If you need Homebrew, install it manually:');
+                    addLog('/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"');
+                    nextStep();
+                }
+            }, () => {
+                // Homebrew not found, skip it
+                addLog('Homebrew is not installed');
+                addLog('Skipping Homebrew installation (not required for this setup).');
                 nextStep();
             });
         }
 
         function installGit() {
-            runCommand('brew install git', () => {
+            addLog('Checking if Git is installed...');
+            
+            // Check if Git is already installed
+            runCommand('git --version', (stdout) => {
+                addLog(`Git is already installed: ${stdout.trim()}`);
                 nextStep();
+            }, () => {
+                // Git not found, try to install via Homebrew if available
+                addLog('Git not found, checking for Homebrew...');
+                runCommand('which brew', (brewPath) => {
+                    if (brewPath.trim()) {
+                        addLog('Installing Git via Homebrew...');
+                        runCommand('brew install git', (stdout) => {
+                            addLog('Git installed successfully');
+                            nextStep();
+                        }, (error) => {
+                            addLog('Failed to install Git via Homebrew', 'error');
+                            addLog('Git is usually pre-installed on macOS.');
+                            addLog('You may need to install Xcode Command Line Tools:');
+                            addLog('xcode-select --install');
+                            nextStep();
+                        });
+                    } else {
+                        addLog('Git not found and Homebrew not available');
+                        addLog('Git is usually pre-installed on macOS.');
+                        addLog('You may need to install Xcode Command Line Tools:');
+                        addLog('xcode-select --install');
+                        nextStep();
+                    }
+                }, () => {
+                    // No Homebrew, skip Git installation
+                    addLog('Git not found and Homebrew not available');
+                    addLog('Git is usually pre-installed on macOS.');
+                    addLog('You may need to install Xcode Command Line Tools:');
+                    addLog('xcode-select --install');
+                    nextStep();
+                });
             });
         }
 
@@ -293,8 +532,27 @@
             const extractDir = path.join(tmpDir, 'extract');
             const finalRepoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace');
             
+            // Check if repository already exists
+            if (fs.existsSync(finalRepoPath)) {
+                try {
+                    // Check if it looks like a valid repository (has d2l-mcp directory)
+                    const d2lMcpPath = path.join(finalRepoPath, 'd2l-mcp');
+                    if (fs.existsSync(d2lMcpPath)) {
+                        addLog('Repository already exists at destination');
+                        addLog('Skipping download and extraction');
+                        document.getElementById('status').textContent = 'Repository already exists. Continuing setup...';
+                        nextStep();
+                        return;
+                    }
+                } catch (err) {
+                    // If check fails, proceed with download (will remove existing)
+                    addLog('Existing repository found but may be incomplete. Will re-download...');
+                }
+            }
+            
             // GitHub ZIP download URL
-            const zipUrl = 'https://github.com/hamzakammar/mcp-workspace/archive/refs/heads/main.zip';
+            // Note: Using 'leanmcp' branch - change this if your default branch is different
+            const zipUrl = 'https://github.com/hamzakammar/mcp-workspace/archive/refs/heads/leanmcp.zip';
             const zipPath = path.join(tmpDir, 'repo.zip');
             
             document.getElementById('status').textContent = 'Creating directories...';
@@ -310,33 +568,220 @@
                 
                 // Step 2: Download ZIP
                 runCommand(`curl -L -o "${zipPath}" "${zipUrl}"`, () => {
-                    document.getElementById('status').textContent = 'Extracting ZIP file...';
+                    document.getElementById('status').textContent = 'Verifying download...';
                     addLog('Download complete!');
-                    try {
-                        const stats = fs.statSync(zipPath);
-                        addLog(`File size: ${stats.size} bytes`);
-                    } catch (err) {
-                        addLog(`File size: Unable to determine`);
-                    }
-                    addLog(`Extracting to: ${extractDir}`);
-                    // Step 3: Extract ZIP
-                    runCommand(`unzip -q "${zipPath}" -d "${extractDir}"`, () => {
-                        document.getElementById('status').textContent = 'Moving repository to final location...';
-                        
-                        // Step 4: Move extracted folder to final location
-                        // The extracted folder will be named "mcp-workspace-main"
-                        const extractedFolder = path.join(extractDir, 'mcp-workspace-main');
-                        
-                        runCommand(`mv "${extractedFolder}" "${finalRepoPath}"`, () => {
-                            document.getElementById('status').textContent = 'Repository downloaded and extracted successfully!';
-                            nextStep();
-                        }, (error) => {
-                            document.getElementById('status').textContent = `Failed to move repository: ${error.message}`;
-                        });
-                    }, (error) => {
-                        document.getElementById('status').textContent = `Failed to extract ZIP: ${error.message}`;
-                    });
+                    
+                    // Wait a moment for file to be fully written
+                    setTimeout(() => {
+                        try {
+                            if (!fs.existsSync(zipPath)) {
+                                throw new Error('Downloaded file not found');
+                            }
+                            
+                            const stats = fs.statSync(zipPath);
+                            const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
+                            addLog(`File size: ${stats.size} bytes (${fileSizeMB} MB)`);
+                            
+                            // Check if file is too small (likely an error page)
+                            if (stats.size < 1000) {
+                                // Read file content to see what error we got
+                                const fileContent = fs.readFileSync(zipPath, 'utf8');
+                                addLog(`Downloaded content: ${fileContent.substring(0, 200)}`, 'error');
+                                
+                                if (fileContent.includes('404') || fileContent.includes('Not Found')) {
+                                    const errorMsg = 'Repository not found (404). This usually means:\n' +
+                                        '1. The repository is private (requires authentication)\n' +
+                                        '2. The repository URL or branch name is incorrect\n' +
+                                        '3. The repository doesn\'t exist\n\n' +
+                                        'For private repositories, you may need to:\n' +
+                                        '- Use a personal access token\n' +
+                                        '- Or clone the repository manually using git';
+                                    addLog(errorMsg, 'error');
+                                    throw new Error('Repository download failed: 404 Not Found. The repository might be private.');
+                                } else if (fileContent.includes('<html') || fileContent.includes('<!DOCTYPE')) {
+                                    throw new Error('Download returned an HTML page instead of a ZIP file. The repository might be private or require authentication.');
+                                } else {
+                                    throw new Error(`Downloaded file is too small (${stats.size} bytes). Expected a ZIP file.`);
+                                }
+                            }
+                            
+                            // Check if file starts with ZIP signature (PK\x03\x04 or PK\x05\x06)
+                            const fileBuffer = fs.readFileSync(zipPath);
+                            const fileStart = fileBuffer.slice(0, 4).toString('hex');
+                            if (fileStart !== '504b0304' && fileStart !== '504b0506' && fileStart !== '504b0708') {
+                                // Not a ZIP file, read as text to see what we got
+                                const fileText = fileBuffer.toString('utf8').substring(0, 500);
+                                addLog(`File content preview: ${fileText}`, 'error');
+                                throw new Error('Downloaded file is not a valid ZIP file. It might be an error page.');
+                            }
+                            
+                            addLog('ZIP file verified successfully');
+                            document.getElementById('status').textContent = 'Extracting ZIP file (this may take 30-60 seconds)...';
+                            addLog(`Extracting to: ${extractDir}`);
+                            addLog('Extraction in progress, please wait...');
+                            
+                            // Step 3: Extract ZIP with timeout
+                            // Note: For large repositories (~800MB), extraction can take 30-60 seconds
+                            // But for small files (<1MB), it should be nearly instant
+                            const extractStartTime = Date.now();
+                            const extractTimeout = 120000; // 2 minute timeout
+                            let extractCompleted = false;
+                            
+                            // Set up timeout
+                            const timeoutId = setTimeout(() => {
+                                if (!extractCompleted) {
+                                    extractCompleted = true;
+                                    addLog('Extraction is taking longer than expected. Checking if it completed...', 'error');
+                                    
+                                    // Check if extraction actually completed
+                                    try {
+                                        const extractedItems = fs.readdirSync(extractDir);
+                                        if (extractedItems.length > 0) {
+                                            addLog(`Found ${extractedItems.length} items in extract directory. Extraction may have completed.`);
+                                            // Try to proceed
+                                            processExtraction();
+                                        } else {
+                                            addLog('Extract directory is empty. Extraction may have failed.', 'error');
+                                            document.getElementById('status').textContent = 'Extraction timed out. Please try again or check the ZIP file.';
+                                        }
+                                    } catch (err) {
+                                        addLog(`Error checking extract directory: ${err.message}`, 'error');
+                                        document.getElementById('status').textContent = 'Extraction timed out. Please try again.';
+                                    }
+                                }
+                            }, extractTimeout);
+                            
+                            function processExtraction() {
+                                if (extractCompleted) return;
+                                extractCompleted = true;
+                                clearTimeout(timeoutId);
+                                
+                                const extractDuration = ((Date.now() - extractStartTime) / 1000).toFixed(1);
+                                addLog(`Extraction completed in ${extractDuration} seconds`);
+                                document.getElementById('status').textContent = 'Finding extracted folder...';
+                                
+                                // Step 4: Find the extracted folder name dynamically
+                                // GitHub creates folders named "{repo-name}-{branch-name}"
+                                try {
+                                    const extractedItems = fs.readdirSync(extractDir);
+                                    if (extractedItems.length === 0) {
+                                        throw new Error('Extract directory is empty. The ZIP file may be corrupted or empty.');
+                                    }
+                                    
+                                    addLog(`Found ${extractedItems.length} items in extract directory: ${extractedItems.join(', ')}`);
+                                    
+                                    const extractedFolder = extractedItems.find(item => {
+                                        const itemPath = path.join(extractDir, item);
+                                        return fs.statSync(itemPath).isDirectory() && item.startsWith('mcp-workspace-');
+                                    });
+                                    
+                                    if (!extractedFolder) {
+                                        throw new Error(`Could not find extracted folder in ${extractDir}. Found: ${extractedItems.join(', ')}`);
+                                    }
+                                    
+                                    const extractedFolderPath = path.join(extractDir, extractedFolder);
+                                    addLog(`Found extracted folder: ${extractedFolder}`);
+                                    
+                                    // Step 5: Check if destination exists and remove it first
+                                    if (fs.existsSync(finalRepoPath)) {
+                                        addLog('Repository already exists at destination. Removing existing directory...');
+                                        document.getElementById('status').textContent = 'Removing existing repository...';
+                                        
+                                        runCommand(`rm -rf "${finalRepoPath}"`, () => {
+                                            addLog('Existing repository removed');
+                                            document.getElementById('status').textContent = 'Moving repository to final location...';
+                                            
+                                            // Now move the new folder
+                                            runCommand(`mv "${extractedFolderPath}" "${finalRepoPath}"`, () => {
+                                                document.getElementById('status').textContent = 'Repository downloaded and extracted successfully!';
+                                                addLog(`Repository installed to: ${finalRepoPath}`);
+                                                nextStep();
+                                            }, (error) => {
+                                                addLog(`Failed to move repository: ${error.message}`, 'error');
+                                                document.getElementById('status').textContent = `Failed to move repository: ${error.message}`;
+                                            });
+                                        }, (error) => {
+                                            addLog(`Failed to remove existing repository: ${error.message}`, 'error');
+                                            document.getElementById('status').textContent = `Failed to remove existing repository: ${error.message}`;
+                                        });
+                                    } else {
+                                        // Destination doesn't exist, just move
+                                        document.getElementById('status').textContent = 'Moving repository to final location...';
+                                        
+                                        runCommand(`mv "${extractedFolderPath}" "${finalRepoPath}"`, () => {
+                                            document.getElementById('status').textContent = 'Repository downloaded and extracted successfully!';
+                                            addLog(`Repository installed to: ${finalRepoPath}`);
+                                            nextStep();
+                                        }, (error) => {
+                                            addLog(`Failed to move repository: ${error.message}`, 'error');
+                                            document.getElementById('status').textContent = `Failed to move repository: ${error.message}`;
+                                        });
+                                    }
+                                } catch (err) {
+                                    addLog(`Failed to find extracted folder: ${err.message}`, 'error');
+                                    document.getElementById('status').textContent = `Failed to find extracted folder: ${err.message}`;
+                                }
+                            }
+                            
+                            runCommand(`unzip -q "${zipPath}" -d "${extractDir}"`, () => {
+                                processExtraction();
+                            }, (error) => {
+                                extractCompleted = true;
+                                clearTimeout(timeoutId);
+                                
+                                // Even if unzip reports an error, check if extraction actually worked
+                                // (sometimes unzip exits with non-zero but still extracts files)
+                                try {
+                                    const extractedItems = fs.readdirSync(extractDir);
+                                    if (extractedItems.length > 0) {
+                                        addLog('Extraction may have completed despite error. Checking...');
+                                        processExtraction();
+                                    } else {
+                                        addLog(`Failed to extract ZIP: ${error.message}`, 'error');
+                                        document.getElementById('status').textContent = `Failed to extract ZIP: ${error.message}`;
+                                    }
+                                } catch (err) {
+                                    addLog(`Failed to extract ZIP: ${error.message}`, 'error');
+                                    document.getElementById('status').textContent = `Failed to extract ZIP: ${error.message}`;
+                                }
+                            });
+                            
+                            // Also check periodically if extraction completed (fallback)
+                            const checkInterval = setInterval(() => {
+                                if (extractCompleted) {
+                                    clearInterval(checkInterval);
+                                    return;
+                                }
+                                
+                                try {
+                                    const extractedItems = fs.readdirSync(extractDir);
+                                    const hasExtractedFolder = extractedItems.some(item => {
+                                        const itemPath = path.join(extractDir, item);
+                                        try {
+                                            return fs.statSync(itemPath).isDirectory() && item.startsWith('mcp-workspace-');
+                                        } catch {
+                                            return false;
+                                        }
+                                    });
+                                    
+                                    if (hasExtractedFolder && !extractCompleted) {
+                                        addLog('Detected extracted folder, proceeding...');
+                                        clearInterval(checkInterval);
+                                        clearTimeout(timeoutId);
+                                        processExtraction();
+                                    }
+                                } catch (err) {
+                                    // Ignore errors during check
+                                }
+                            }, 2000); // Check every 2 seconds
+                        } catch (err) {
+                            addLog(`Download verification failed: ${err.message}`, 'error');
+                            document.getElementById('status').textContent = `Download failed: ${err.message}`;
+                            addLog('Please check if the repository is public and the URL is correct.', 'error');
+                        }
+                    }, 500); // Wait 500ms for file to be written
                 }, (error) => {
+                    addLog(`Failed to download ZIP: ${error.message}`, 'error');
                     document.getElementById('status').textContent = `Failed to download ZIP: ${error.message}`;
                 });
             });
@@ -359,9 +804,22 @@
             const supabaseServiceKey = document.getElementById('supabaseServiceKey').value.trim();
             const openaiKey = document.getElementById('openaiKey').value.trim();
             const postgresUrl = document.getElementById('postgresUrl').value.trim();
+            const d2lHost = document.getElementById('d2lHost').value.trim();
+            const d2lUsername = document.getElementById('d2lUsername').value.trim();
+            const d2lPassword = document.getElementById('d2lPassword').value.trim();
             
-            if (!supabaseUrl || !supabaseServiceKey) {
-                document.getElementById('credentialsStatus').textContent = '❌ Supabase URL and Service Key are required';
+            if (!supabaseUrl || !supabaseServiceKey || !postgresUrl) {
+                document.getElementById('credentialsStatus').textContent = 'Supabase URL, Service Key, and Postgres URL are required';
+                return;
+            }
+            
+            if (!d2lHost || !d2lUsername || !d2lPassword) {
+                document.getElementById('credentialsStatus').textContent = 'D2L Brightspace credentials are required';
+                return;
+            }
+            
+            if (!openaiKey) {
+                document.getElementById('credentialsStatus').textContent = 'OpenAI API Key is required';
                 return;
             }
             
@@ -369,15 +827,10 @@
             document.getElementById('credentialsStatus').textContent = 'Saving credentials...';
             
             // Write files
-            writeEnvAndMaps(supabaseUrl, supabaseServiceKey, openaiKey, postgresUrl);
+            writeEnvAndMaps(supabaseUrl, supabaseServiceKey, openaiKey, postgresUrl, d2lHost, d2lUsername, d2lPassword);
         }
 
-        function skipCredentials() {
-            // Use defaults
-            writeEnvAndMaps('', '', '', '');
-        }
-
-        function writeEnvAndMaps(supabaseUrl, supabaseServiceKey, openaiKey, postgresUrl) {
+        function writeEnvAndMaps(supabaseUrl, supabaseServiceKey, openaiKey, postgresUrl, d2lHost, d2lUsername, d2lPassword) {
             const repoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace');
             const d2lMcpPath = path.join(repoPath, 'd2l-mcp');
             const envPath = path.join(d2lMcpPath, '.env');
@@ -396,14 +849,14 @@
                 addLog(`Created directory: ${dbPath}`);
             }
             
-            // Write .env file
+            // Write .env file with ALL environment variables
             const envContent = `# MCP Workspace Environment Variables
 # Generated on ${new Date().toISOString()}
 
 # D2L Brightspace Credentials
-D2L_HOST=learn.yourschool.edu
-D2L_USERNAME=your-username
-D2L_PASSWORD=your-password
+D2L_HOST=${d2lHost}
+D2L_USERNAME=${d2lUsername}
+D2L_PASSWORD=${d2lPassword}
 
 # MCP Configuration
 MCP_PORT=3000
@@ -413,15 +866,15 @@ MCP_TRANSPORT=http
 STUDY_MCP_TOKEN=${secureToken}
 
 # Supabase Configuration
-${supabaseUrl ? `SUPABASE_URL=${supabaseUrl}` : '# SUPABASE_URL=your-supabase-url'}
-${supabaseServiceKey ? `SUPABASE_SERVICE_ROLE_KEY=${supabaseServiceKey}` : '# SUPABASE_SERVICE_ROLE_KEY=your-service-role-key'}
+SUPABASE_URL=${supabaseUrl}
+SUPABASE_SERVICE_ROLE_KEY=${supabaseServiceKey}
 # SUPABASE_ANON_KEY=your-anon-key
 
 # OpenAI Configuration
-${openaiKey ? `OPENAI_API_KEY=${openaiKey}` : '# OPENAI_API_KEY=your-openai-api-key'}
+OPENAI_API_KEY=${openaiKey}
 
 # Postgres Connection (for schema application)
-${postgresUrl ? `POSTGRES_URL=${postgresUrl}` : '# POSTGRES_URL=postgresql://postgres:[password]@[host]:5432/postgres'}
+POSTGRES_URL=${postgresUrl}
 `;
 
             fs.writeFile(envPath, envContent, (err) => {
@@ -465,7 +918,7 @@ ${postgresUrl ? `POSTGRES_URL=${postgresUrl}` : '# POSTGRES_URL=postgresql://pos
                         document.getElementById('credentialsScreen').style.display = 'none';
                         document.getElementById('mainSetupScreen').style.display = 'block';
                         
-                        addLog('✅ Configuration files written successfully');
+                        addLog('Configuration files written successfully');
                         document.getElementById('status').textContent = 'Configuration saved!';
                         nextStep();
                     });
@@ -522,7 +975,7 @@ ${postgresUrl ? `POSTGRES_URL=${postgresUrl}` : '# POSTGRES_URL=postgresql://pos
                 const pg = require('pg');
                 Client = pg.Client;
             } catch (error) {
-                addLog('❌ pg module not found. Installing...', 'error');
+                addLog('pg module not found. Installing...', 'error');
                 addLog('Please run: npm install pg');
                 addLog('Or apply schema manually in Supabase SQL Editor.');
                 nextStep();
@@ -534,14 +987,14 @@ ${postgresUrl ? `POSTGRES_URL=${postgresUrl}` : '# POSTGRES_URL=postgresql://pos
 
             client.connect()
                 .then(() => {
-                    addLog('✅ Connected to Postgres database');
+                    addLog('Connected to Postgres database');
                     addLog('Executing schema SQL...');
                     
                     // Execute the schema SQL
                     return client.query(schemaContent);
                 })
                 .then(() => {
-                    addLog('✅ Schema SQL executed successfully');
+                    addLog('Schema SQL executed successfully');
                     addLog('Verifying schema application...');
                     
                     // Run verification queries
@@ -568,17 +1021,17 @@ ${postgresUrl ? `POSTGRES_URL=${postgresUrl}` : '# POSTGRES_URL=postgresql://pos
                     checks.forEach(check => {
                         const value = check.result.rows[0][Object.keys(check.result.rows[0])[0]];
                         if (value === null) {
-                            addLog(`❌ ${check.name} not found`, 'error');
+                            addLog(`${check.name} not found`, 'error');
                             allValid = false;
                         } else {
-                            addLog(`✅ ${check.name} verified`);
+                            addLog(`${check.name} verified`);
                         }
                     });
 
                     if (!allValid) {
-                        addLog('⚠️ Some schema elements are missing. Please check manually.', 'error');
+                        addLog('Some schema elements are missing. Please check manually.', 'error');
                     } else {
-                        addLog('✅ All schema elements verified successfully!');
+                        addLog('All schema elements verified successfully!');
                     }
 
                     return client.end();
@@ -588,7 +1041,7 @@ ${postgresUrl ? `POSTGRES_URL=${postgresUrl}` : '# POSTGRES_URL=postgresql://pos
                     nextStep();
                 })
                 .catch((error) => {
-                    addLog(`❌ Schema application failed: ${error.message}`, 'error');
+                    addLog(`Schema application failed: ${error.message}`, 'error');
                     addLog('You can apply the schema manually in Supabase SQL Editor.');
                     addLog(`Schema file location: ${schemaPath}`);
                     
@@ -621,12 +1074,106 @@ ${postgresUrl ? `POSTGRES_URL=${postgresUrl}` : '# POSTGRES_URL=postgresql://pos
 
             addLog('Starting D2L MCP server...');
             addLog(`Working directory: ${d2lMcpPath}`);
-            addLog('Running: npm run mcp:launch');
             
-            // Start server with mcp:launch (keeps process alive, streams logs)
-            const serverProcess = exec(`cd "${d2lMcpPath}" && npm run mcp:launch`, (error, stdout, stderr) => {
+            // Step 1: Build the project first (TypeScript needs to be compiled)
+            addLog('Building project (compiling TypeScript)...');
+            addLog('Executing: npm run build');
+            
+            runCommand(`cd "${d2lMcpPath}" && npm run build`, (stdout) => {
+                addLog('Build completed successfully');
+                
+                // Step 2: Run auth
+                addLog('Running authentication step...');
+                addLog('Executing: npm run auth');
+                
+                runCommand(`cd "${d2lMcpPath}" && npm run auth`, (stdout) => {
+                    addLog('Authentication completed successfully');
+                    
+                    // Step 3: Check if server is already running
+                    addLog('Checking if server is already running on port 3000...');
+                    
+                    runCommand(`lsof -ti:3000 || echo "no-process"`, (stdout) => {
+                        const pid = stdout.trim();
+                        
+                        if (pid && pid !== 'no-process') {
+                            addLog(`Found process ${pid} using port 3000`);
+                            
+                            // Check if server is responding
+                            runCommand(`curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/mcp || echo "000"`, (httpCode) => {
+                                const code = httpCode.trim();
+                                
+                                if (code === '200' || code === '401' || code === '403') {
+                                    // Server is already running and responding
+                                    addLog('Server is already running and responding');
+                                    addLog('Skipping server start, using existing instance');
+                                    addLog('Polling for server health...');
+                                    startHealthPolling();
+                                } else {
+                                    // Port is in use but server not responding - kill it
+                                    addLog(`Port 3000 is in use but server not responding (HTTP ${code})`);
+                                    addLog(`Killing process ${pid}...`);
+                                    
+                                    runCommand(`kill -9 ${pid}`, () => {
+                                        addLog('Process killed, starting new server...');
+                                        startServerProcess(d2lMcpPath);
+                                    }, (error) => {
+                                        addLog(`Failed to kill process: ${error.message}`, 'error');
+                                        addLog('Attempting to start server anyway...');
+                                        startServerProcess(d2lMcpPath);
+                                    });
+                                }
+                            }, () => {
+                                // curl failed, assume server not responding
+                                addLog('Could not check server status, killing existing process...');
+                                runCommand(`kill -9 ${pid}`, () => {
+                                    addLog('Process killed, starting new server...');
+                                    startServerProcess(d2lMcpPath);
+                                }, (error) => {
+                                    addLog(`Failed to kill process: ${error.message}`, 'error');
+                                    addLog('Attempting to start server anyway...');
+                                    startServerProcess(d2lMcpPath);
+                                });
+                            });
+                        } else {
+                            // No process on port 3000, start server normally
+                            addLog('Port 3000 is available');
+                            startServerProcess(d2lMcpPath);
+                        }
+                    }, () => {
+                        // lsof failed or not available, try starting server anyway
+                        addLog('Could not check port status, attempting to start server...');
+                        startServerProcess(d2lMcpPath);
+                    });
+                }, (error) => {
+                    addLog(`Authentication failed: ${error.message}`, 'error');
+                    addLog('Server will not start without authentication');
+                    document.getElementById('status').textContent = 'Authentication failed. Please check your D2L credentials.';
+                });
+            }, (error) => {
+                addLog(`Build failed: ${error.message}`, 'error');
+                addLog('Server will not start without a successful build');
+                document.getElementById('status').textContent = 'Build failed. Please check the logs for errors.';
+            });
+        }
+        
+        function startServerProcess(d2lMcpPath) {
+            addLog('Starting server...');
+            addLog('Executing: npm start');
+            
+            // Start server (keeps process alive, streams logs)
+            const serverProcess = exec(`cd "${d2lMcpPath}" && npm start`, (error, stdout, stderr) => {
                 if (error) {
-                    addLog(`Server error: ${error.message}`, 'error');
+                    // Check if error is just port in use (might have been a race condition)
+                    if (error.message.includes('EADDRINUSE')) {
+                        addLog('Port 3000 is in use. Server may already be running.', 'error');
+                        addLog('Checking if server is responding...');
+                        // Try polling anyway - server might be running
+                        setTimeout(() => {
+                            startHealthPolling();
+                        }, 2000);
+                    } else {
+                        addLog(`Server error: ${error.message}`, 'error');
+                    }
                 }
             });
             
@@ -642,12 +1189,29 @@ ${postgresUrl ? `POSTGRES_URL=${postgresUrl}` : '# POSTGRES_URL=postgresql://pos
             serverProcess.stderr.on('data', (data) => {
                 const output = data.toString().trim();
                 if (output) {
-                    addLog(`Server: ${output}`, 'error');
+                    // Check if it's the port in use error
+                    if (output.includes('EADDRINUSE')) {
+                        addLog('Port 3000 is already in use. Server may already be running.', 'error');
+                        addLog('Checking if existing server is responding...');
+                        setTimeout(() => {
+                            startHealthPolling();
+                        }, 2000);
+                    } else {
+                        addLog(`Server: ${output}`, 'error');
+                    }
                 }
             });
 
             addLog('Server process started (running in background)');
             addLog('Polling for server health...');
+            
+            // Start polling after a short delay
+            setTimeout(() => {
+                startHealthPolling();
+            }, 2000);
+        }
+        
+        function startHealthPolling() {
     
             let pollCount = 0;
             const maxPolls = 60; // Increased to 60 seconds
@@ -673,10 +1237,10 @@ ${postgresUrl ? `POSTGRES_URL=${postgresUrl}` : '# POSTGRES_URL=postgresql://pos
                         }
                     } else {
                         clearInterval(pollHealth);
-                        addLog('✅ Server is responding!');
+                        addLog('Server is responding!');
                         addLog(`Health response: ${stdout.substring(0, 100)}...`);
-                        addLog('✅ MCP server is running at http://localhost:3000/mcp');
-                        document.getElementById('status').textContent = '✅ Setup complete! Server is running.';
+                        addLog('MCP server is running at http://localhost:3000/mcp');
+                        document.getElementById('status').textContent = 'Setup complete! Server is running.';
                         document.getElementById('startBtn').disabled = true;
                         document.getElementById('checkBtn').disabled = false;
                         
@@ -731,7 +1295,7 @@ ${postgresUrl ? `POSTGRES_URL=${postgresUrl}` : '# POSTGRES_URL=postgresql://pos
             
             const vscodeMcpPath = path.join(vscodePath, 'mcp.json');
             fs.writeFileSync(vscodeMcpPath, JSON.stringify(vscodeMcpJson, null, 2));
-            addLog('✅ Created .vscode/mcp.json');
+            addLog('Created .vscode/mcp.json');
             
             // 2. Generate setup/launch.http.json
             const launchHttpJson = {
@@ -748,7 +1312,7 @@ ${postgresUrl ? `POSTGRES_URL=${postgresUrl}` : '# POSTGRES_URL=postgresql://pos
             
             const launchHttpPath = path.join(setupPath, 'launch.http.json');
             fs.writeFileSync(launchHttpPath, JSON.stringify(launchHttpJson, null, 2));
-            addLog('✅ Created setup/launch.http.json');
+            addLog('Created setup/launch.http.json');
             
             // 3. Generate setup/poke.md
             const pokeMd = `# Connecting StudyMCP to Poke
@@ -787,10 +1351,10 @@ ${authToken ? `- Verify authentication token is correct` : ''}
 
             const pokeMdPath = path.join(setupPath, 'poke.md');
             fs.writeFileSync(pokeMdPath, pokeMd);
-            addLog('✅ Created setup/poke.md');
+            addLog('Created setup/poke.md');
             
             // 4. Generate setup/README.md
-            const setupReadme = `# StudyMCP Setup Complete! 🎉
+            const setupReadme = `# StudyMCP Setup Complete!
 
 Your StudyMCP server has been successfully installed and configured.
 
@@ -854,14 +1418,355 @@ For issues or questions, check the main repository README.
 
             const setupReadmePath = path.join(setupPath, 'README.md');
             fs.writeFileSync(setupReadmePath, setupReadme);
-            addLog('✅ Created setup/README.md');
+            addLog('Created setup/README.md');
             
-            addLog('✅ All launch configuration files generated successfully!');
-            addLog('📁 Files created in:');
+            addLog('All launch configuration files generated successfully!');
+            addLog('Files created in:');
             addLog(`   - ${vscodeMcpPath}`);
             addLog(`   - ${launchHttpPath}`);
             addLog(`   - ${path.join(setupPath, 'poke.md')}`);
             addLog(`   - ${setupReadmePath}`);
+            
+            // Show platform launch screen
+            showPlatformLaunchScreen(authToken);
+        }
+        
+        let currentAuthToken = '';
+        
+        function showPlatformLaunchScreen(token) {
+            currentAuthToken = token;
+            document.getElementById('mainSetupScreen').style.display = 'none';
+            document.getElementById('credentialsScreen').style.display = 'none';
+            document.getElementById('platformLaunchScreen').style.display = 'block';
+            
+            // Hide instructions by default
+            document.getElementById('platformInstructions').style.display = 'none';
+            
+            // Update token display
+            const tokenDisplay = document.getElementById('displayToken');
+            if (token) {
+                tokenDisplay.textContent = token;
+            } else {
+                tokenDisplay.textContent = 'Not configured';
+            }
+        }
+        
+        function launchPlatform(platform) {
+            try {
+                addLog(`Launching platform: ${platform}`);
+                const repoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace');
+                
+                // Verify repo exists
+                if (!fs.existsSync(repoPath)) {
+                    addLog(`Repository not found at: ${repoPath}`, 'error');
+                    addLog('Please run the setup first to download the repository.');
+                    return;
+                }
+                
+                switch(platform) {
+                case 'vscode':
+                    // Hide instructions for VS Code
+                    document.getElementById('platformInstructions').style.display = 'none';
+                    
+                    // Try to open VS Code with the workspace
+                    const vscodeConfigPath = path.join(repoPath, '.vscode', 'mcp.json');
+                    
+                    // Verify config exists
+                    if (!fs.existsSync(vscodeConfigPath)) {
+                        addLog('VS Code config not found. Creating it now...', 'error');
+                        // Try to create it
+                        try {
+                            const vscodeDir = path.join(repoPath, '.vscode');
+                            if (!fs.existsSync(vscodeDir)) {
+                                fs.mkdirSync(vscodeDir, { recursive: true });
+                            }
+                            // Config should have been created during setup, but recreate if missing
+                            addLog('Please run setup again to create VS Code config.');
+                        } catch (error) {
+                            addLog(`Error: ${error.message}`, 'error');
+                        }
+                    }
+                    
+                    runCommand(`code "${repoPath}"`, () => {
+                        addLog('VS Code opened with workspace');
+                        addLog('MCP configuration ready at .vscode/mcp.json');
+                        addLog('VS Code will automatically detect the MCP server');
+                        if (fs.existsSync(vscodeConfigPath)) {
+                            addLog(`Config verified: ${vscodeConfigPath}`);
+                        }
+                    }, () => {
+                        // VS Code command not in PATH, try alternative
+                        runCommand(`open -a "Visual Studio Code" "${repoPath}"`, () => {
+                            addLog('VS Code opened via Finder');
+                            addLog('MCP configuration ready at .vscode/mcp.json');
+                        }, () => {
+                            addLog('VS Code not found. Install it or add to PATH.', 'error');
+                            addLog(`Workspace: ${repoPath}`);
+                            addLog('Config: .vscode/mcp.json');
+                        });
+                    });
+                    break;
+                    
+                case 'poke':
+                    // Open poke.md file in browser
+                    const pokeMdPath = path.join(repoPath, 'setup', 'poke.md');
+                    
+                    // Check if file exists
+                    if (fs.existsSync(pokeMdPath)) {
+                        runCommand(`open "${pokeMdPath}"`, () => {
+                            addLog('Opened poke.md in browser');
+                        }, () => {
+                            addLog(`Could not open poke.md. File exists at: ${pokeMdPath}`, 'error');
+                        });
+                    } else {
+                        addLog(`poke.md not found at: ${pokeMdPath}`, 'error');
+                        addLog('Creating default poke.md instructions...');
+                    }
+                    
+                    // Read and display poke.md instructions on screen with actionable steps
+                    let pokeInstructions = '';
+                    try {
+                        if (fs.existsSync(pokeMdPath)) {
+                            const pokeContent = fs.readFileSync(pokeMdPath, 'utf8');
+                            pokeInstructions = pokeContent;
+                        } else {
+                            throw new Error('File not found');
+                        }
+                    } catch (error) {
+                        addLog(`Could not read poke.md: ${error.message}`, 'error');
+                        // Show basic instructions if file read fails
+                        pokeInstructions = `# Poke setup (HTTP MCP)
+
+## 1) Start the server
+\`\`\`bash
+cd ${repoPath}/d2l-mcp
+npm run mcp:launch
+\`\`\`
+
+Then, run ngrok to get a public url
+\`\`\`bash
+ngrok http 3000
+\`\`\`
+
+## 2) In Poke, add MCP server
+
+Go to Setting -> Connections
+Click **Add Integration**
+Click **Create**
+Name your Integration, then paste the ngrok url into Server URL`;
+                    }
+                    
+                    // Add token info if available
+                    if (currentAuthToken) {
+                        pokeInstructions += `\n\n## 3) Add Authorization (if required)
+\nIf your server requires authentication, add this header:\n\nAuthorization: Bearer ${currentAuthToken}`;
+                    }
+                    
+                    try {
+                        document.getElementById('instructionsContent').textContent = pokeInstructions;
+                        document.getElementById('platformInstructions').style.display = 'block';
+                        document.getElementById('copyInstructionsBtn').style.display = 'none'; // No config to copy for Poke
+                        addLog('Displayed poke.md instructions on screen');
+                    } catch (error) {
+                        addLog(`Error displaying instructions: ${error.message}`, 'error');
+                    }
+                    break;
+                    
+                case 'claude':
+                    // Open Claude Desktop app
+                    runCommand(`open -a "Claude"`, () => {
+                        addLog('Claude Desktop opened');
+                    }, () => {
+                        addLog('Claude Desktop not found. Please install it first.', 'error');
+                    });
+                    
+                    // Open Claude config directory and config file
+                    const claudeConfigDir = path.join(require('os').homedir(), 'Library', 'Application Support', 'Claude');
+                    const claudeConfigFile = path.join(claudeConfigDir, 'claude_desktop_config.json');
+                    
+                    // Ensure directory exists
+                    if (!fs.existsSync(claudeConfigDir)) {
+                        try {
+                            fs.mkdirSync(claudeConfigDir, { recursive: true });
+                            addLog('Created Claude config directory');
+                        } catch (error) {
+                            addLog(`Could not create config directory: ${error.message}`, 'error');
+                        }
+                    }
+                    
+                    // Open config directory
+                    runCommand(`open "${claudeConfigDir}"`, () => {
+                        addLog('Opened Claude config directory');
+                    }, () => {
+                        addLog('Could not open Claude config directory', 'error');
+                    });
+                    
+                    // Try to open config file in default editor (with delay to let Finder open first)
+                    setTimeout(() => {
+                        if (fs.existsSync(claudeConfigFile)) {
+                            runCommand(`open "${claudeConfigFile}"`, () => {
+                                addLog('Opened Claude config file');
+                            }, () => {
+                                addLog('Could not open config file', 'error');
+                            });
+                        } else {
+                            addLog('Config file does not exist yet. Create it and paste the config below.');
+                        }
+                    }, 1000);
+                    
+                    // Show Claude Desktop config instructions
+                    const claudeConfigPath = path.join(repoPath, 'setup', 'claude_desktop.snippet.json');
+                    let configJson = '';
+                    
+                    try {
+                        if (fs.existsSync(claudeConfigPath)) {
+                            let snippetContent = fs.readFileSync(claudeConfigPath, 'utf8');
+                            // Replace placeholder with actual path
+                            snippetContent = snippetContent.replace(/<ABSOLUTE_PATH_TO_YOUR_REPO>/g, repoPath);
+                            configJson = snippetContent;
+                        } else {
+                            // Fallback config
+                            const fallbackConfig = {
+                                "mcpServers": {
+                                    "study-mcp": {
+                                        "command": "npm",
+                                        "args": ["run", "mcp:bridge"],
+                                        "cwd": `${repoPath}/d2l-mcp`,
+                                        "env": {
+                                            "MCP_HTTP_URL": "http://localhost:3000/mcp"
+                                        }
+                                    }
+                                }
+                            };
+                            configJson = JSON.stringify(fallbackConfig, null, 2);
+                        }
+                    } catch (error) {
+                        addLog(`Could not read Claude config snippet: ${error.message}`, 'error');
+                        // Use fallback
+                        const fallbackConfig = {
+                            "mcpServers": {
+                                "study-mcp": {
+                                    "command": "npm",
+                                    "args": ["run", "mcp:bridge"],
+                                    "cwd": `${repoPath}/d2l-mcp`,
+                                    "env": {
+                                        "MCP_HTTP_URL": "http://localhost:3000/mcp"
+                                    }
+                                }
+                            }
+                        };
+                        configJson = JSON.stringify(fallbackConfig, null, 2);
+                    }
+                    
+                    // Store config for copy button
+                    window.currentConfigJson = configJson;
+                    
+                    const claudeInstructions = `# Claude Desktop Setup
+
+## Step 1: Start the HTTP MCP server
+\`\`\`bash
+cd ${repoPath}/d2l-mcp
+npm run mcp:launch
+\`\`\`
+
+## Step 2: Configure Claude Desktop
+
+The Claude config file and directory have been opened for you.
+
+1. Open the config file: ${claudeConfigFile}
+2. Merge the following JSON snippet into your existing config
+3. Save the file
+4. Restart Claude Desktop
+
+## Configuration to add:
+
+\`\`\`json
+${configJson}
+\`\`\`
+
+Note: If you already have an "mcpServers" section, merge the "study-mcp" entry into it.`;
+                    
+                    document.getElementById('instructionsContent').textContent = claudeInstructions;
+                    document.getElementById('platformInstructions').style.display = 'block';
+                    document.getElementById('copyInstructionsBtn').style.display = 'inline-block'; // Show copy button
+                    addLog('Displayed Claude Desktop setup instructions');
+                    break;
+                    
+                case 'test':
+                    // Hide instructions for test
+                    document.getElementById('platformInstructions').style.display = 'none';
+                    
+                    // Test the server connection
+                    const testUrl = 'http://localhost:3000/mcp';
+                    addLog('Testing server connection...');
+                    
+                    const testCommand = currentAuthToken 
+                        ? `curl -s -H "Authorization: Bearer ${currentAuthToken}" "${testUrl}"`
+                        : `curl -s "${testUrl}"`;
+                    
+                    runCommand(testCommand, (stdout) => {
+                        if (stdout && stdout.length > 0) {
+                            addLog(`Server response: ${stdout.substring(0, 200)}`);
+                            if (stdout.includes('Unauthorized') || stdout.includes('error')) {
+                                addLog('Server is running but authentication may be required', 'error');
+                            } else {
+                                addLog('Server is responding successfully!');
+                            }
+                        } else {
+                            addLog('Server responded with empty response', 'error');
+                        }
+                    }, (error) => {
+                        const errorMsg = error && error.message ? error.message : 'Connection failed';
+                        addLog(`Server test failed: ${errorMsg}`, 'error');
+                        addLog('Make sure the server is running: cd ~/StudyMCP/mcp-workspace/d2l-mcp && npm start');
+                    });
+                    break;
+                    
+                default:
+                    addLog(`Unknown platform: ${platform}`, 'error');
+                    break;
+                }
+            } catch (error) {
+                addLog(`Error launching platform: ${error.message}`, 'error');
+                console.error('Platform launch error:', error);
+            }
+        }
+        
+        function copyToken() {
+            if (currentAuthToken) {
+                // Use Electron clipboard API
+                const { clipboard } = require('electron');
+                clipboard.writeText(currentAuthToken);
+                addLog('Token copied to clipboard!');
+            } else {
+                addLog('No token available to copy', 'error');
+            }
+        }
+        
+        function copyInstructions() {
+            if (window.currentConfigJson) {
+                const { clipboard } = require('electron');
+                clipboard.writeText(window.currentConfigJson);
+                addLog('Configuration JSON copied to clipboard!');
+                
+                // Show feedback
+                const btn = document.getElementById('copyInstructionsBtn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#2a2a2a';
+                btn.style.borderColor = '#4a9eff';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                }, 2000);
+            } else {
+                addLog('No configuration to copy', 'error');
+            }
+        }
+        
+        function showMainScreen() {
+            document.getElementById('platformLaunchScreen').style.display = 'none';
+            document.getElementById('mainSetupScreen').style.display = 'block';
         }
 
 
@@ -893,7 +1798,7 @@ For issues or questions, check the main repository README.
 
             Promise.all([nodeCheck, npmCheck]).then(([nodeInstalled, npmInstalled]) => {
                 if (nodeInstalled && npmInstalled) {
-                    document.getElementById('status').textContent = '✅ Node.js is installed. Ready to begin setup!';
+                    document.getElementById('status').textContent = 'Node.js is installed. Ready to begin setup!';
                     document.getElementById('startBtn').disabled = false;
                 } else {
                     showNodeInstallScreen();
@@ -922,55 +1827,163 @@ For issues or questions, check the main repository README.
                 return;
             }
 
-            // Node.js LTS download URLs for macOS
-            const nodeVersion = '20.11.1'; // LTS version
-            const baseUrl = `https://nodejs.org/dist/v${nodeVersion}`;
-            let installerUrl;
-
-            if (arch === 'arm64') {
-                installerUrl = `${baseUrl}/node-v${nodeVersion}-darwin-arm64.pkg`;
-            } else if (arch === 'x64') {
-                installerUrl = `${baseUrl}/node-v${nodeVersion}-darwin-x64.pkg`;
-            } else {
-                showError(`Unsupported architecture: ${arch}`);
+            // Check if Node.js is already installed
+            runCommand('node --version', (stdout) => {
+                addLog(`Node.js is already installed: ${stdout.trim()}`);
+                // Check if we're in automated setup flow (step 1 is Node.js installation)
+                const inAutomatedSetup = currentStep === 1;
+                if (inAutomatedSetup) {
+                    // In automated setup, just verify and continue
+                    addLog('Node.js already installed, skipping installation and continuing...');
+                    verifyNodeInstallation(true);
+                } else {
+                    // Initial check - just verify
+                    verifyNodeInstallation(false);
+                }
                 return;
-            }
-
-            console.log('Downloading from:', installerUrl);
-
-            const downloadPath = path.join(require('os').homedir(), 'StudyMCP', 'tmp');
-            const installerPath = path.join(downloadPath, 'node.pkg');
-
-            document.getElementById('nodeInstallStatus').textContent = 'Creating download directory...';
-
-            // Create download directory
-            runCommand(`mkdir -p "${downloadPath}"`, () => {
-                document.getElementById('nodeInstallStatus').textContent = 'Downloading Node.js installer...';
-
-                // Download the installer using curl
-                runCommand(`curl -L -o "${installerPath}" "${installerUrl}"`, () => {
-                    document.getElementById('nodeInstallStatus').textContent = 'Download complete! Opening installer...';
-
-                    // Open the installer
-                    runCommand(`open "${installerPath}"`, () => {
-                        document.getElementById('nodeInstallStatus').textContent = 'Please complete the Node.js installation in the opened window, then click "Continue" below.';
-
-                        // Add continue button
-                        const continueBtn = document.createElement('button');
-                        continueBtn.textContent = 'Continue After Installation';
-                        continueBtn.onclick = verifyNodeInstallation;
-                        continueBtn.style.marginTop = '20px';
-                        document.getElementById('nodeInstallStatus').appendChild(document.createElement('br'));
-                        document.getElementById('nodeInstallStatus').appendChild(continueBtn);
-                    });
-                }, (error) => {
-                    document.getElementById('nodeInstallStatus').textContent = `Download failed: ${error}`;
-                    document.getElementById('installNodeBtn').disabled = false;
-                });
+            }, () => {
+                // Node.js not found, proceed with installation
+                proceedWithInstallation();
             });
+
+            function proceedWithInstallation() {
+
+            // Use a reliable approach: try Homebrew first, then manual download
+            const downloadPath = path.join(require('os').homedir(), 'StudyMCP', 'tmp');
+            
+            document.getElementById('nodeInstallStatus').textContent = 'Checking installation options...';
+            addLog('Checking if Homebrew is available for Node.js installation...');
+            
+            // First check if Homebrew is available (easier than direct download)
+            runCommand('which brew', (brewPath) => {
+                if (brewPath.trim()) {
+                    addLog('Homebrew found! Installing Node.js via Homebrew...');
+                    document.getElementById('nodeInstallStatus').textContent = 'Installing Node.js via Homebrew (this may take a few minutes)...';
+                    
+                    runCommand('brew install node', (stdout) => {
+                        addLog('Node.js installed via Homebrew');
+                        // Check if we're in automated setup flow (step 1 is Node.js installation)
+                        const inAutomatedSetup = currentStep === 1;
+                        verifyNodeInstallation(inAutomatedSetup);
+                    }, (error) => {
+                        addLog('Homebrew installation failed, trying direct download...', 'error');
+                        tryDirectDownload();
+                    });
+                } else {
+                    addLog('Homebrew not found, trying direct download...');
+                    tryDirectDownload();
+                }
+            }, () => {
+                // No Homebrew, try direct download
+                tryDirectDownload();
+            });
+            
+            function tryDirectDownload() {
+                // For ARM64 Macs, Node.js only provides tar.gz, not PKG files
+                // PKG files are only available for x64
+                if (arch === 'arm64') {
+                    addLog('ARM64 Macs: Node.js only provides tar.gz files, not PKG installers');
+                    addLog('Opening Node.js download page for manual installation...');
+                    showManualDownloadOption();
+                    return;
+                }
+                
+                // For x64, we can download PKG
+                const nodeVersion = '24.13.0'; // Latest LTS
+                const nodeDownloadUrl = `https://nodejs.org/dist/v${nodeVersion}/node-v${nodeVersion}-darwin-x64.pkg`;
+                
+                addLog(`Attempting to download Node.js ${nodeVersion} for x64...`);
+                addLog(`URL: ${nodeDownloadUrl}`);
+                document.getElementById('nodeInstallStatus').textContent = `Downloading Node.js ${nodeVersion} (this may take a few minutes)...`;
+                
+                // Create download directory
+                runCommand(`mkdir -p "${downloadPath}"`, () => {
+                    const installerPath = path.join(downloadPath, 'node.pkg');
+                    
+                    // Download without -f flag first to see what we get
+                    runCommand(`curl -L --progress-bar -o "${installerPath}" "${nodeDownloadUrl}" 2>&1`, (stdout) => {
+                        addLog('Download completed, verifying file...');
+                        
+                        setTimeout(() => {
+                            try {
+                                if (!fs.existsSync(installerPath)) {
+                                    throw new Error('Downloaded file not found');
+                                }
+                                
+                                const stats = fs.statSync(installerPath);
+                                const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
+                                
+                                // Check if file is actually a PKG (at least 20MB)
+                                const minSize = 20 * 1024 * 1024;
+                                
+                                if (stats.size < minSize) {
+                                    // Check file content - might be HTML error page
+                                    const fileBuffer = fs.readFileSync(installerPath);
+                                    const fileStart = fileBuffer.slice(0, 200).toString();
+                                    if (fileStart.includes('<html') || fileStart.includes('<!DOCTYPE') || fileStart.includes('404') || fileStart.includes('Not Found')) {
+                                        throw new Error('Downloaded file appears to be an HTML error page, not a PKG file');
+                                    }
+                                    throw new Error(`Downloaded file is too small (${fileSizeMB} MB). Expected at least 20MB.`);
+                                }
+                                
+                                addLog(`File verified: ${fileSizeMB} MB`);
+                                document.getElementById('nodeInstallStatus').textContent = 'Download complete! Opening installer...';
+
+                                // Open the installer
+                                runCommand(`open "${installerPath}"`, () => {
+                                    document.getElementById('nodeInstallStatus').textContent = 'Please complete the Node.js installation in the opened window, then click "Continue" below.';
+
+                                    // Add continue button
+                                    const continueBtn = document.createElement('button');
+                                    continueBtn.textContent = 'Continue After Installation';
+                                    // Check if we're in automated setup flow (step 1 is Node.js installation)
+                                    const inAutomatedSetup = currentStep === 1;
+                                    continueBtn.onclick = () => verifyNodeInstallation(inAutomatedSetup);
+                                    continueBtn.style.marginTop = '20px';
+                                    document.getElementById('nodeInstallStatus').appendChild(document.createElement('br'));
+                                    document.getElementById('nodeInstallStatus').appendChild(continueBtn);
+                                }, (error) => {
+                                    addLog(`Failed to open installer: ${error.message}`, 'error');
+                                    document.getElementById('nodeInstallStatus').textContent = `Failed to open installer. Please manually open: ${installerPath}`;
+                                    document.getElementById('installNodeBtn').disabled = false;
+                                });
+                            } catch (err) {
+                                addLog(`File verification failed: ${err.message}`, 'error');
+                                showManualDownloadOption();
+                            }
+                        }, 1000);
+                    }, (error) => {
+                        addLog(`Download failed: ${error.message}`, 'error');
+                        showManualDownloadOption();
+                    });
+                });
+            }
+            
+            function showManualDownloadOption() {
+                document.getElementById('nodeInstallStatus').innerHTML = `
+                    <div style="color: #ff6b6b;">
+                        <p><strong>Automatic download failed</strong></p>
+                        <p>Please download Node.js manually:</p>
+                        <p style="margin: 10px 0;">
+                            <button onclick="window.open('https://nodejs.org/', '_blank')" style="background: #2a2a2a; color: #e0e0e0; padding: 10px 20px; border: 1px solid #404040; border-radius: 5px; cursor: pointer;">
+                                Open Node.js Download Page
+                            </button>
+                        </p>
+                        <p>Or use Homebrew (if installed):</p>
+                        <code style="background: rgba(0,0,0,0.3); padding: 5px; border-radius: 3px; display: block; margin: 5px 0;">brew install node</code>
+                        <p style="margin-top: 15px;">
+                            <button onclick="verifyNodeInstallation()" style="background: #2a2a2a; color: #e0e0e0; padding: 8px 16px; border: 1px solid #404040; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+                                I've Installed Node.js - Verify Now
+                            </button>
+                        </p>
+                    </div>
+                `;
+                document.getElementById('installNodeBtn').disabled = false;
+            }
+            }
         }
 
-        function verifyNodeInstallation() {
+        function verifyNodeInstallation(continueSetup = false) {
             document.getElementById('nodeInstallStatus').textContent = 'Verifying Node.js installation...';
 
             const nodeCheck = new Promise((resolve) => {
@@ -989,30 +2002,45 @@ For issues or questions, check the main repository README.
 
             Promise.all([nodeCheck, npmCheck]).then(([nodeInstalled, npmInstalled]) => {
                 if (nodeInstalled && npmInstalled) {
-                    document.getElementById('nodeInstallStatus').textContent = '✅ Node.js installation verified!';
+                    document.getElementById('nodeInstallStatus').textContent = 'Node.js installation verified!';
 
-                    // Switch back to main setup screen
-                    document.getElementById('nodeInstallScreen').style.display = 'none';
-                    document.getElementById('mainSetupScreen').style.display = 'block';
-                    document.getElementById('status').textContent = '✅ Node.js is installed. Ready to begin setup!';
-                    document.getElementById('startBtn').disabled = false;
+                    if (continueSetup) {
+                        // We're in the automated setup flow, continue to next step
+                        document.getElementById('nodeInstallScreen').style.display = 'none';
+                        document.getElementById('mainSetupScreen').style.display = 'block';
+                        addLog('Node.js installation verified, continuing setup...');
+                        nextStep();
+                    } else {
+                        // Initial check or manual verification - just enable start button
+                        document.getElementById('nodeInstallScreen').style.display = 'none';
+                        document.getElementById('mainSetupScreen').style.display = 'block';
+                        document.getElementById('status').textContent = 'Node.js is installed. Ready to begin setup!';
+                        document.getElementById('startBtn').disabled = false;
+                    }
                 } else {
-                    document.getElementById('nodeInstallStatus').textContent = '❌ Node.js installation not detected. Please try installing again.';
+                    document.getElementById('nodeInstallStatus').textContent = 'Node.js installation not detected. Please try installing again.';
                     document.getElementById('installNodeBtn').disabled = false;
                 }
             });
         }
 
         function showError(message) {
-            document.getElementById('status').textContent = `❌ ${message}`;
+            document.getElementById('status').textContent = message;
         }
 
+        let stepErrors = {}; // Track errors per step
+        
         function nextStep() {
             currentStep++;
             if (currentStep < steps.length) {
                 updateProgress(currentStep);
                 setTimeout(() => {
-                    steps[currentStep].command();
+                    try {
+                        steps[currentStep].command();
+                    } catch (error) {
+                        addLog(`Step ${currentStep + 1} failed to start: ${error.message}`, 'error');
+                        handleStepError(error);
+                    }
                 }, 1000);
             } else {
                 updateProgress(currentStep - 1);
@@ -1020,6 +2048,38 @@ For issues or questions, check the main repository README.
                 document.getElementById('startBtn').disabled = true;
                 document.getElementById('checkBtn').disabled = false;
             }
+        }
+        
+        function handleStepError(error) {
+            stepErrors[currentStep] = error;
+            const stepName = steps[currentStep].name;
+            addLog(`Step "${stepName}" encountered an error`, 'error');
+            addLog(`Error: ${error.message}`, 'error');
+            
+            // Show retry option
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = `
+                Step "${stepName}" failed. 
+                <button onclick="retryCurrentStep()" style="margin-left: 10px; padding: 5px 15px;">Retry</button>
+                <button onclick="skipCurrentStep()" style="margin-left: 5px; padding: 5px 15px; background: #3a3a3a;">Skip</button>
+            `;
+        }
+        
+        function retryCurrentStep() {
+            addLog(`Retrying step ${currentStep + 1}: ${steps[currentStep].name}`);
+            delete stepErrors[currentStep];
+            document.getElementById('status').textContent = `Retrying: ${steps[currentStep].name}`;
+            try {
+                steps[currentStep].command();
+            } catch (error) {
+                handleStepError(error);
+            }
+        }
+        
+        function skipCurrentStep() {
+            addLog(`Skipping step ${currentStep + 1}: ${steps[currentStep].name}`, 'error');
+            delete stepErrors[currentStep];
+            nextStep();
         }
 
         function startSetup() {
@@ -1038,20 +2098,21 @@ For issues or questions, check the main repository README.
 
         function checkStatus() {
             const repoPath = path.join(require('os').homedir(), 'StudyMCP', 'mcp-workspace'); 
+            const d2lMcpPath = path.join(repoPath, 'd2l-mcp');
 
             // Check if directory exists
             if (fs.existsSync(repoPath)) {
-                document.getElementById('status').textContent = '✅ Repository cloned successfully!';
+                document.getElementById('status').textContent = 'Repository downloaded successfully!';
 
-                // Check if .env exists
-                const envPath = path.join(repoPath, '.env');
+                // Check if .env exists in d2l-mcp directory
+                const envPath = path.join(d2lMcpPath, '.env');
                 if (fs.existsSync(envPath)) {
-                    document.getElementById('status').textContent = '✅ Environment configured! You can now run the MCP server.';
+                    document.getElementById('status').textContent = 'Environment configured! You can now run the MCP server.';
                 } else {
-                    document.getElementById('status').textContent = '⚠️ Repository exists but .env file not found. Please create it manually.';
+                    document.getElementById('status').textContent = 'Repository exists but .env file not found. Please run setup to configure.';
                 }
             } else {
-                document.getElementById('status').textContent = '❌ Repository not found. Please run setup again.';
+                document.getElementById('status').textContent = 'Repository not found. Please run setup again.';
             }
         }
     </script>
